@@ -1,0 +1,20 @@
+Motorboat destroy
+bombs
+
+Supply dropper
+
+maybe some kind of gun that just sends the matter straight up
+mining_gun
+Send up mats to create new supply dropps
+
+Transmuter
+When transmuter is full it will send up the mats and drop a new supply drop
+
+Also maybe some kind of transmuter-computer which can be used to transmute directly
+This bas ically replaces crafting
+
+placing all 7 wyrm cubes next to each other will summon the wyrm and end the game
+
+wyrm highway use sin wave
+
+Wyrm cubes should be able to spawn underwater
