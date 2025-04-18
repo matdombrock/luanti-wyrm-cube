@@ -1,0 +1,50 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
+  "Lua": {
+    "runtime": {
+      "version": "Lua 5.3",
+      "path": [
+        "?.lua",
+        "?/init.lua",
+        "mods/?/init.lua",
+        "builtin/?.lua",
+        "builtin/?/init.lua"
+      ]
+    },
+    "workspace": {
+      "library": [
+        "./builtin",
+        "./mods"
+      ],
+      "ignoreDir": [
+        ".git",
+        "tests",
+        "build",
+        "mods/mobkit"
+      ],
+      "maxPreload": 1000,
+      "preloadFileSize": 500
+    },
+    "diagnostics": {
+      "enable": true,
+      "globals": [
+        "minetest",
+        "vector",
+        "core",
+        "luanti"
+      ]
+    },
+    "completion": {
+      "callSnippet": "Both"
+    },
+    "hint": {
+      "enable": true
+    },
+    "format": {
+      "enable": true
+    },
+    "telemetry": {
+      "enable": false
+    }
+  }
+}
