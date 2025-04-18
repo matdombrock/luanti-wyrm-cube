@@ -16,6 +16,6 @@ This is a sandbox *exploration* game that puts you right into the action. The fo
 - Bringing all 7 Wyrm Cubes together leads to summoning the Wyrm
 - Semi-secret end game content
 
-See the [GUIDE](GUIDE.md) for more information on gameplay details.
+See the [GUIDE](https://github.com/matdombrock/luanti-wyrm-cube/blob/main/GUIDE.md) for more information on gameplay details.
 
 
