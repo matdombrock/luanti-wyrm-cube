@@ -20,8 +20,6 @@ local mod_storage = core.get_mod_storage()
 local players_list = mod_storage:get_string("players_list")
 -- Store wyrm cube positions as a single serialized table
 local wyrm_cubes = {}
--- Track cloud positions to remove on save / quit
-local cloud_positions = {}
 
 --
 -- UTILITY FUNCTIONS
@@ -1554,6 +1552,7 @@ core.register_node("wyrm_cube:lamp_blinking_on", {
 		return true -- Continue the timer
 	end,
 })
+
 core.register_node("wyrm_cube:cloud_block", {
 	description = "Walkable Cloud",
 	tiles = { "cloud.png" },
@@ -1562,15 +1561,14 @@ core.register_node("wyrm_cube:cloud_block", {
 	paramtype = "light",
 	glow = 1,
 	on_construct = function(pos)
-		-- Add the position to the list of cloud positions
-		-- local index = table.insert(cloud_positions, core.pos_to_string(pos))
-		-- We cant just store a table of cloud positions because when they are removed it throws off the index
-		cloud_positions[core.pos_to_string(pos)] = 1
-		core.after(10, function()
-			core.set_node(pos, { name = "air" })
-			cloud_positions[core.pos_to_string(pos)] = nil
-		end)
+		-- Start the timer with an interval of 1 second
+		core.get_node_timer(pos):start(10)
 		return true
+	end,
+	on_timer = function(pos, elapsed)
+		-- Switch to the "on" state
+		core.swap_node(pos, { name = "air" })
+		return true -- Continue the timer
 	end,
 })
 core.register_node("wyrm_cube:cloud_block_perm", {
@@ -3010,11 +3008,6 @@ end, true)
 -- Register server shutdown to ensure data is saved
 core.register_on_shutdown(function()
 	save_wyrm_cubes()
-	-- Turn all tracked cloud blocks back to air
-	for _, pos in ipairs(cloud_positions) do
-		core.set_node(pos, { name = "air" })
-		log("Turning cloud block back to air at " .. pos)
-	end
 end)
 
 --
