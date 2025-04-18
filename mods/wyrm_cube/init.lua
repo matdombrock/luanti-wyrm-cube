@@ -1766,8 +1766,10 @@ local function calculate_transmute_rate(meta, stack)
 	if stack ~= nil and not stack:is_empty() then
 		-- Check the tranmutation rate
 		for _, item in ipairs(transmutation_rates) do
-			if string_includes(stack:get_name(), item) then
-				transmute_rate = item[2]
+			local item_name = item[1]
+			local item_rate = item[2]
+			if string_includes(stack:get_name(), item_name) then
+				transmute_rate = item_rate
 				break
 			end
 		end
