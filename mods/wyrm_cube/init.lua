@@ -40,7 +40,7 @@ local function pchance(percent)
 end
 
 -- Returns true if the string contains the substring
-function string_includes(str, substring)
+local function string_includes(str, substring)
 	return string.find(str, substring, 1, true) ~= nil
 end
 
@@ -916,7 +916,7 @@ local function spawn_watchtower(name)
 	player:set_pos(pos)
 	spawn_particles(pos)
 end
-
+-- TODO: Not DRY. Basically a copy of watchtower
 local function spawn_megatower(name)
 	local player = core.get_player_by_name(name)
 	if not player then
@@ -1764,7 +1764,7 @@ local function calculate_transmute_rate(meta, stack)
 	if stack ~= nil and not stack:is_empty() then
 		-- Check the tranmutation rate
 		for _, item in ipairs(transmutation_rates) do
-			if stack:get_name() == "default:" .. item[1] then
+			if string_includes(stack:get_name(), item) then
 				transmute_rate = item[2]
 				break
 			end
@@ -2761,7 +2761,7 @@ core.register_chatcommand("wc_spawn_megatower", {
 })
 core.register_chatcommand("wc_spawn_clouds", {
 	description = "Creates walkable clouds.",
-	privs = { server = true }, -- Optional: Restrict command to players with specific privileges
+	privs = { server = true },
 	func = function(name, param)
 		mod_storage:set_int(name .. "_spawning_clouds", 1)
 		spawn_clouds(name)
