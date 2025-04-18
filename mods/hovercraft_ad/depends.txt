@@ -1,0 +1,4 @@
+default
+wool
+dye
+mesecons_pistons

@@ -1,0 +1,6 @@
+
+# Hovercrafts can only be used by owners.
+mount_ownable (Ownable hovercrafts) bool true
+
+# Enable extended hovercraft colors.
+hovercraft.extended_colors (Extended hovercraft colors) bool true

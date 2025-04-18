@@ -12,7 +12,7 @@ if enable_tnt == nil then
 	enable_tnt = minetest.is_singleplayer()
 end
 
-local tnt_radius = tonumber(minetest.settings:get("tnt_radius") or 4)
+local tnt_radius = tonumber(minetest.settings:get("tnt_radius") or 3)
 
 -- Fill a list with data for content IDs, after all nodes are registered
 local cid_data = {}
@@ -334,7 +334,7 @@ local function tnt_explode(pos, radius, ignore_protection, ignore_on_blast, owne
 	vm1:write_to_map()
 
 	-- recalculate new radius
-	radius = 20 * math.floor(radius * math.pow(count, 1/3))
+	radius = math.floor(radius * math.pow(count, 1/3))
 
 	-- perform the explosion
 	local vm = VoxelManip()

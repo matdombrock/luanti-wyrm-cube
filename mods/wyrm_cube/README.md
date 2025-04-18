@@ -18,4 +18,4 @@ This is a sandbox *exploration* game that puts you right into the action. The fo
 
 See the [GUIDE](GUIDE.md) for more information on gameplay details.
 
-  
+

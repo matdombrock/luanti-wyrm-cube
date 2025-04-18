@@ -1,0 +1,23 @@
+# textdomain:hovercraft
+
+# Translators:
+
+
+Red Hovercraft=
+Blue Hovercraft=
+Green Hovercraft=
+Yellow Hovercraft=
+White Hovercraft=
+Black Hovercraft=
+Grey Hovercraft=
+Dark Grey Hovercraft=
+Cyan Hovercraft=
+Orange Hovercraft=
+Brown Hovercraft=
+Pink Hovercraft=
+Magenta Hovercraft=
+Violet Hovercraft=
+Dark Green Hovercraft=
+You don't have room in your inventory.=
+You cannot take @1's hovercraft.=
+You cannot ride @1's hovercraft.=

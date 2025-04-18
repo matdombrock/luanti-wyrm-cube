@@ -6,102 +6,12 @@ function split_cmd(input)
     return result
 end
 
-minetest.register_chatcommand("teleport", {
-  params = "",
-  description = "Teleport to the location you are looking at",
-  func = function(name)
-    -- Get the player object
-    local player = minetest.get_player_by_name(name)
-    if player then
-      -- Get the player's position and look direction
-      local pos = player:get_pos()
-      local look_dir = player:get_look_dir()
-
-      -- Perform a raycast from the player's position in the look direction
-      local ray = minetest.raycast(pos, vector.add(pos, vector.multiply(look_dir, 1000)), false, false)
-      -- Iterate through the raycast result
-      local count = 0
-      for pointed_thing in ray do
-	-- Log the pointed_thing type
-	minetest.log(pointed_thing.type)
-	if pointed_thing.type == "node" and count > 1 then
-	  -- Adjust the target position slightly above the node to avoid clipping
-	  local target_pos = vector.add(pointed_thing.above, {x = 0, y = 1.5, z = 0})
-	  -- Teleport the player to the target position
-	  player:set_pos(target_pos)
-	  -- return true, "Teleported to the location you are looking at!"
-	end
-	count = count + 1
-      end
-      return false, "No suitable location found in the direction you are looking at!"
-    else
-      return false, "Player not found!"
-    end
-  end,
-})
-
-minetest.register_on_joinplayer(function(player)
-  local player_name = player:get_player_name()
-  minetest.log("action", player_name .. " has joined the game!")
-  local formspec = [[
-  size[8,6]
-  label[0.5,0.5;Welcome!]
-  textarea[0.5,1;7.5,4;intro_text;;Welcome to Luanti!
-
-  Here are some tips to get started:
-  1. Gather resources to build your base.
-  2. Avoid dangerous mobs at night.
-  3. Explore the world to find hidden treasures.
-  4. This is NOT MINECRAFT, so don't expect the same gameplay.
-
-  Have fun and enjoy playing!]
-  button_exit[3,5.5;2,1;exit;Start Playing]
-  ]]
-  -- minetest.show_formspec(player_name, "game_intro:formspec", formspec)
-  -- Your custom logic here
-end)
-
-local function hidro(name)
-  local player = minetest.get_player_by_name(name)
-  if player then
-    local inv = player:get_inventory()
-    inv:add_item("main", "biofuel:fuel_can 99")
-    inv:add_item("main", "hidroplane:hidro 1")
-    return true, "You have been given 99 biofuel and 1 hidroplane."
-  else
-    return false, "Player not found."
-  end
-end
-
-minetest.register_chatcommand("hidro", {
-  params = "",
-  description = "Gives the player 99 biofuel and 1 hidroplane",
-  func = hidro,
-})
-
-local function fall_dmg(mult)
-  minetest.register_on_player_hpchange(function(player, hp_change, reason)
-    if reason.type == "fall" then
-        -- Check if the player has a specific privilege
-	if (mult == 0) then
-	  player:set_physics_override({
-	    fall_damage = false -- Disables fall damage completely
-	  })
-	end
-	return hp_change * mult -- Apply fall damage multiplier
-    end
-    return hp_change -- Allow other types of damage
-  end, true)
-end
-
-
 local move_speeds = {
-  normal = { speed = 1, jump = 1, sneak = 1, fall = 1 },
-  runner = { speed = 2, jump = 1.5, sneak = 1, fall = 1 },
-  doom = { speed = 3, jump = 2, sneak = 5, fall = 0.1 },
-  hyper = { speed = 16, jump = 8, sneak = 5, fall = 0 },
+  normal = { speed = 1, jump = 1, sneak = 1},
+  runner = { speed = 2, jump = 1.5, sneak = 1},
+  doom = { speed = 3, jump = 2, sneak = 5},
+  hyper = { speed = 16, jump = 8, sneak = 5},
 }
-
 minetest.register_chatcommand("mv", {
   params = "<normal|doom|hyper>",
   description = "Change player movement settings",
@@ -125,16 +35,12 @@ minetest.register_chatcommand("mv", {
 	})
       end
     end)
-    -- Override fall damage 
-    fall_dmg(move.fall)
     return true, "Movement set to " .. param .. "."
   end,
 })
 
-
-
 minetest.register_chatcommand("ts", {
-    params = "<dawn|noon|sunset|midnight> <speed?>",
+    params = "<dawn|noon|sunset|midnight>",
     description = "Set the time of day to morning, noon, sunset, or midnight",
     func = function(name, param)
         -- Define time values for specific times of day
@@ -240,6 +146,28 @@ local function no_dmg(player, seconds)
   end)
 end
 
+minetest.register_chatcommand("no_dmg", {
+    params = "<seconds>",
+    description = "Disable damage for a specified number of seconds.",
+    privs = {server = true},
+    func = function(name, param)
+        local player = minetest.get_player_by_name(name)
+        if not player then
+            return false, "Player not found."
+        end
+
+        -- Parse the number of seconds from the parameter
+        local seconds = tonumber(param or 120)
+        if not seconds or seconds <= 0 then
+            return false, "Invalid number of seconds. Usage: /no_dmg <seconds>"
+        end
+
+        no_dmg(player, seconds)
+
+        return true, "Damage disabled for " .. seconds .. " seconds."
+    end,
+})
+
 minetest.register_chatcommand("tp", {
     params = "<x> <y> <z>",
     description = "Teleport the player to the specified position (x, y, z).",
@@ -288,7 +216,7 @@ minetest.register_chatcommand("tpr", {
 
         -- Generate random coordinates within the range
         local random_x = math.random(-range, range)
-        local random_y = math.random(5, 100) -- Keep Y between 5 and 100 for safety
+        local random_y = 128 -- Keep Y between 5 and 100 for safety
         local random_z = math.random(-range, range)
 
         -- Set the new position
@@ -299,6 +227,40 @@ minetest.register_chatcommand("tpr", {
 
         return true, "Teleported to random location: " .. minetest.pos_to_string(new_position)
     end,
+})
+
+minetest.register_chatcommand("blink", {
+    params = "<x> <y> <z>",
+    description = "Teleport the player to the specified RELATIVE position (x, y, z).",
+    privs = {teleport = true},
+    func = function(name, param)
+        local player = minetest.get_player_by_name(name)
+        if not player then
+            return false, "Player not found."
+        end
+
+        -- Parse the coordinates from the parameters
+        local dx, dy, dz = param:match("^(%-?%d+%.?%d*) (%-?%d+%.?%d*) (%-?%d+%.?%d*)$")
+        if not dx or not dy or not dz then
+            return false, "Invalid coordinates. Usage: /blink <x> <y> <z>"
+        end
+
+        -- Convert coordinates to numbers
+        dx, dy, dz = tonumber(dx), tonumber(dy), tonumber(dz)
+
+        -- Get the player's current position
+        local player_pos = player:get_pos()
+
+        -- Calculate the new position
+        local new_position = {
+            x = player_pos.x + dx,
+            y = player_pos.y + dy,
+            z = player_pos.z + dz,
+        }
+
+        -- Teleport the player to the new position
+        player:set_pos(new_position)
+    end
 })
 
 minetest.register_chatcommand("clear_inventory", {
@@ -371,46 +333,6 @@ minetest.register_chatcommand("spawn_relative_entity", {
     end,
 })
 
-
-local target_pos = {x = 100, y = 20, z = 100}
-
--- Register the chat command
-minetest.register_chatcommand("arrow", {
-    params = "<length>",
-    description = "Draws an arrow pointing to a static world location",
-    privs = {server = true},  -- Only allow players with the 'server' privilege to use this command
-    func = function(name, param)
-        -- Parse the arrow length from the command parameter
-        local length = tonumber(param) or 10
-        local player = minetest.get_player_by_name(name)
-        if not player then
-            return false, "Player not found!"
-        end
-
-        -- Get the player's current position
-        local player_pos = player:get_pos()
-
-        -- Calculate the direction vector to the target position
-        local direction = vector.subtract(target_pos, player_pos)
-        local direction_normalized = vector.normalize(direction)
-        -- Draw the arrow using particles
-        for i = 1, length do
-            local particle_pos = vector.add(player_pos, vector.multiply(direction_normalized, i))
-            minetest.add_particle({
-                pos = particle_pos,
-                velocity = {x = 0, y = 0, z = 0},
-                acceleration = {x = 0, y = 0, z = 0},
-                expirationtime = 5,
-                size = 4,
-                texture = "arrow_particle.png", -- Provide your own arrow particle texture
-                glow = 10,
-            })
-        end
-
-        return true, "Arrow drawn pointing to the target position!"
-    end,
-})
-
 minetest.register_chatcommand("respawn", {
     description = "Teleport to your respawn or bed location",
     privs = {}, -- No special privileges required
@@ -425,47 +347,11 @@ minetest.register_chatcommand("respawn", {
     end,
 })
 
-local function start_kit(name)
-  local player = minetest.get_player_by_name(name)
-  if player then
-    local inv = player:get_inventory()
-    inv:add_item("main", "default:sword_steel 1")
-    inv:add_item("main", "3d_armor:boots_steel 1")
-    inv:add_item("main", "3d_armor:chestplate_steel 1")
-    inv:add_item("main", "3d_armor:helmet_steel 1")
-    inv:add_item("main", "shields:shield_steel 1")
-    inv:add_item("main", "default:torch 32")
-    inv:add_item("main", "default:pick_steel 1")
-    inv:add_item("main", "default:axe_steel 1")
-    inv:add_item("main", "default:shovel_steel 1")
-    inv:add_item("main", "farming:hoe_steel 1")
-    inv:add_item("main", "farming:bread 32")
-    inv:add_item("main", "default:apple 32")
-    inv:add_item("main", "default:tree 64") -- Wood (raw) block
-    inv:add_item("main", "default:tree 64") -- Wood (raw) block
-    inv:add_item("main", "default:stone 64")
-    inv:add_item("main", "beds:bed_bottom 1")
-    inv:add_item("main", "animalia:saddle 1")
-    inv:add_item("main", "animalia:spawn_horse 1")
-    inv:add_item("main", "animalia:libri_animalia 1")
-    inv:add_item("main", "leads:lead 8")
-    inv:add_item("main", "bucket:bucket_water 8")
-    inv:add_item("main", "default:chest 8")
-    inv:add_item("main", "binoculars:binoculars 1")
-    inv:add_item("main", "goodtorch:flashlight_off 1")
-    inv:add_item("main", "x_bows:bow_wood 1")
-    inv:add_item("main", "x_bows:arrow_wood 99")
-    inv:add_item("main", "grapple:grapple 1")
-    inv:add_item("main", "hangglider:hangglider 1")
-    inv:add_item("main", "farming:hemp_rope 198")
-    return true, "You have been given a start kit."
-  else
-    return false, "Player not found."
-  end
-end
 
-minetest.register_chatcommand("start_kit", {
-    params = "",
-    description = "Gives the player a start kit",
-    func = start_kit,
+minetest.register_chatcommand("su", {
+    description = "Alias for /grantme all",
+    func = function(name, param)
+        -- Call the original command's functionality
+        return minetest.registered_chatcommands["grantme"].func(name, "all")
+    end,
 })

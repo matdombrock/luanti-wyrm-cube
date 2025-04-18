@@ -1,0 +1,18 @@
+
+v1.1
+----
+- added extended colors from michyo's fork: https://github.com/michyo/hovercramt
+
+
+v1.0
+----
+- forked from stu's original hovercraft
+- changed name to "hovercraft_ad"
+- replaced calls to deprecated methods
+- fixed horizontal view & vertical position when attached for newer Minetest versions
+- ensures there is room in inventory before picking up
+- hovercrafts can now be owned & unusable by non-owners
+- made dependencies on default & wool optional (required for craft recipes)
+- changed craft recipe to optionally use basic_materials:motor
+- added localization support
+- added Spanish translation
