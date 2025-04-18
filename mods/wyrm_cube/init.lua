@@ -190,6 +190,12 @@ local function no_dmg(player, seconds)
 	end)
 end
 
+local function fall_dmg(player, mult)
+	local player_name = player:get_player_name()
+	mod_storage:set_float(player_name .. "_fall_dmg_mult", mult)
+	log(player_name .. " movement changed" .. mult)
+end
+
 local move_speeds = {
 	stuck = { speed = 0, jump = 0, sneak = 0, fall = 0, gravity = 0 },
 	normal = { speed = 1, jump = 1, sneak = 1, fall = 1, gravity = 1 },
@@ -201,6 +207,7 @@ local move_speeds = {
 	low_orbit = { speed = 1, jump = 1, sneak = 1, fall = 1, gravity = 0.01 },
 	rabbit = { speed = 1, jump = 3, sneak = 1, fall = 1, gravity = 1 },
 }
+-- TODO: This loop is sus
 local function set_move(player, move)
 	for _, playerx in ipairs(core.get_connected_players()) do
 		if playerx.name ~= player.name then
@@ -215,10 +222,7 @@ local function set_move(player, move)
 			sneak_speed = move.sneak, -- Set player sneak speed
 			gravity = move.gravity, -- Set player gravity
 		})
-		-- fall_dmg(move.fall)
-		local player_name = playerx:get_player_name()
-		mod_storage:set_float(player_name .. "_fall_dmg_mult", move.fall)
-		log(player_name .. " movement changed" .. move.fall)
+		fall_dmg(playerx, move.fall)
 		::continue::
 	end
 end
@@ -2591,10 +2595,10 @@ core.register_craftitem("wyrm_cube:potion_cat", {
 	sunlight_propagates = true,
 	glow = 10,
 	on_use = function(itemstack, user, pointed_thing)
-		fall_dmg(user:get_player_name(), 0.1)
+		fall_dmg(user, 0.1)
 		warn_potion(user, "Cat", 16)
 		core.after(16, function()
-			fall_dmg(user:get_player_name(), 1)
+			fall_dmg(user, 1)
 			spawn_particles(user:get_pos())
 		end)
 		spawn_particles(user:get_pos())
@@ -2611,10 +2615,10 @@ core.register_craftitem("wyrm_cube:potion_feather", {
 	sunlight_propagates = true,
 	glow = 10,
 	on_use = function(itemstack, user, pointed_thing)
-		fall_dmg(user:get_player_name(), 0)
+		fall_dmg(user, 0)
 		warn_potion(user, "Feather", 60)
 		core.after(60, function()
-			fall_dmg(user:get_player_name(), 1)
+			fall_dmg(user, 1)
 			spawn_particles(user:get_pos())
 		end)
 		spawn_particles(user:get_pos())
