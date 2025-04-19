@@ -21,7 +21,7 @@ NOTE: However, I (Rover) have added a few notes and warnings to help you out sin
 
 First of all, welcome to the Wyrm Cube Hunter's Guild!
 
-Second of all, we feel the need to clarify that your mission here is not to "mine" or "craft". It's to find and collect the Wyrm Cubes. You will be provided with everything you need to complete this mission and return home safely. If you do find yourself in a situation where you need to "mine" or "craft", please contact us immediately. We will send you a supply drop with additional supplied. In a wosrt case scenario, we will send you a **Transmuter**. 
+Second of all, we feel the need to clarify that your mission here is not to "mine" or "craft". It's to find and collect the Wyrm Cubes. You will be provided with everything you need to complete this mission and return home safely. If you do find yourself in a situation where you need to "mine" or "craft", please contact us immediately. We will send you a supply drop with additional supplied. In a worst case scenario, we will send you a **Transmuter**. 
 
 NOTE: It's not looking like you will have "everything you need" this time. But I'll cover that later...
 
@@ -47,8 +47,8 @@ This guide will aid you in your mission. Read it carefully and don't misplace it
 
 ### Wyrm Cube Assembly
 - Once you have collected all the Wyrm Cubes on this planet, you will need to assemble them.
-- This is done by placing them in a single statck inside a **Wyrm Chest** (aquired from the Wyrm Tower).
-- Once you have placed all the Wyrm Cubes in the Wyrm Chest, we will evacuate you immidiatly and take over from there.
+- This is done by placing them in a single stack inside a **Wyrm Chest** (acquired from the Wyrm Tower).
+- Once you have placed all the Wyrm Cubes in the Wyrm Chest, we will evacuate you immediately and take over from there.
 
 BIG NOTE: We may not be able to evacuate you this time... You might need to find the **Wyrm Sigil** and make it to the **Wyrm Portal** on your own. 
 
@@ -79,7 +79,7 @@ Aside from pointing out the direction of the Wyrm Cubes, you might find yourself
 
 ### Wyrm GPS
 - The **Wyrm GPS** will show you your coordinates in the top of your HUD when used. 
-- It also allows you to use the minimap with the 'Minimap' key.
+- It also allows you to use the mini-map with the 'Minimap' key.
 
 ### Binoculars
 - The **Binoculars** are a great way to get a better view of the area. 
@@ -114,8 +114,8 @@ NOTE: I'll do my best to send you one of these but no promises.
 =======
 
 ## Capsules
-- Capsules are a high tech storage device that can store items or entire stuructures.
-- You should have been suppplied with a wide variety of capsules in your supply drops. 
+- Capsules are a high tech storage device that can store items or entire structures.
+- You should have been supplied with a wide variety of capsules in your supply drops. 
 - To use an item of vehicle capsule, simply right click on the ground where you want to place it.
 - To use a structure capsule, stand in the location you want to center the structure and right click.
 - Vehicle capsules look like the vehicles they will spawn.
@@ -134,7 +134,7 @@ WARNING: Structure capsules are NO JOKE. They will place a whole structure right
 - To use a potion, simply right click on it in your hand.
 - You will be warned a few seconds before the potion expires.
 
-WARNING: Some potitons can be pretty dangerous. Use them with caution. You dont want to end up 100 blocks in the air when one wears off. 
+WARNING: Some potions can be pretty dangerous. Use them with caution. You don't want to end up 100 blocks in the air when one wears off. 
 
 NOTE: I've heard that mixing potions can lead to strange effects. I have no idea what will happen if you mix them.
 
@@ -150,7 +150,7 @@ Back home you might be used to crafting items. But here we have much more advanc
 - Place the items in the transmuter and it will convert them into tech parts.
 - Items with higher values typically have higher conversion rates.
 - For example, diamonds provide a higher rate than iron ingots.
-- Via a process of repeated transmutation, you will sythesize a **Tech Chip**.
+- Via a process of repeated transmutation, you will synthesize a **Tech Chip**.
 - Transmuting a **Tech Chip** will send it up to me and I will provide you with a **Supply Dropper**.
 - The **Supply Dropper** is a device that will allow you to call down supply drops at will.
 

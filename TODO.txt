@@ -4,8 +4,13 @@ WISHLIST:
 - Tech Printer Computer
 - Custom Bosses
 - More Music
+- Decrease transmute rates
+- Everyone should TP up
 
 KNOWN ISSUES:
 - Clouds sometimes don't clear when exiting the game
 - Some structures may spawn incorrectly in some cases. They need to be emerged fist. 
+- wyrm Cubes can be placed and destroyed more than once
+- Logging should be off by default
+- Monsters can spawn in the clouds
 

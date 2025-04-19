@@ -27,6 +27,7 @@ Rkit.no_dmg = function(player, seconds)
 	return true
 end
 
+-- Percent chance
 Rkit.pchance = function(percent)
 	return math.random(0.0, 100.0) <= percent
 end
