@@ -1,11 +1,13 @@
 # Wyrm Cube
-A Luanti (Minetest) mod inspired by Dragon Ball. 
 
-This mod places 7 Wyrm Cubes into the world and sends you out to find them using an assortment of high tech tools. 
+A Luanti (Minetest) mod inspired by Dragon Ball.
 
-This is a sandbox *exploration* game that puts you right into the action. The focus is on exploration and discovery and a small bit of combat. Crafting is completely optional.
+This mod places 7 Wyrm Cubes into the world and sends you out to find them using an assortment of high tech tools.
+
+This is a sandbox *exploration* game that puts you right into the action. The focus is on exploration and discovery with a small bit of combat. Crafting is completely optional.
 
 ## Features
+
 - Wyrm Cubes can be 10's of thousands of blocks away
 - Use the "Wyrm Radar" to find them
 - Dozens of original tools, nodes, textures and music assets
@@ -17,5 +19,3 @@ This is a sandbox *exploration* game that puts you right into the action. The fo
 - Semi-secret end game content
 
 See the [GUIDE](https://github.com/matdombrock/luanti-wyrm-cube/blob/main/GUIDE.md) for more information on gameplay details.
-
-
