@@ -2861,6 +2861,7 @@ core.register_on_joinplayer(function(player)
 		loop = false,
 	})
 
+	players_list = mod_storage:get_string("players_list")
 	if players_list == "" then
 		players_list = {}
 	else

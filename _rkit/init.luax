@@ -6,11 +6,11 @@ function Rkit:new(mod_name)
 	local instance = setmetatable({}, Rkit) -- Create a new table and attach the metatable
 	instance.mod_name = mod_name or "unknown_mod"
 	instance.enable_logging = true
-  Rkit.player_state = {
-    "null" = {
-      fall_dmg = 1
-    }
-  }
+	Rkit.player_state = {
+		"null" == {
+			fall_dmg = 1,
+		},
+	}
 	return instance
 end
 
@@ -58,18 +58,18 @@ end
 
 -- Sets fall damage multiplier with an optional timeout
 function Rkit:fall_dmg(player, mult, seconds)
-  local player_name = player:get_player_name()
-  self.player_state[player_name].fall_damage = mult
-  if not seconds then
-    return true
-  end
-  -- Re-enable fall damage after N seconds
-  core.after(seconds, function()
-    if player:is_player() then
-      self.player_state[player_name].fall_damage = 1 -- Restore default fall damage
-      core.chat_send_player(player_name, "Fall damage enabled again.")
-    end
-  end)
+	local player_name = player:get_player_name()
+	self.player_state[player_name].fall_damage = mult
+	if not seconds then
+		return true
+	end
+	-- Re-enable fall damage after N seconds
+	core.after(seconds, function()
+		if player:is_player() then
+			self.player_state[player_name].fall_damage = 1 -- Restore default fall damage
+			core.chat_send_player(player_name, "Fall damage enabled again.")
+		end
+	end)
 end
 
 -- Percent chance
@@ -84,9 +84,9 @@ core.register_on_player_hpchange(function(player, hp_change, reason)
 	local player_name = player:get_player_name()
 	local mult = Rkit.player_state[player_name].fall_damage or 1
 	if reason.type == "fall" then
-	  -- Check if the player has a specific privilege
-	  rk:log("Fall Damage Mult: " .. mult)
-	  return hp_change * mult -- Apply fall damage multiplier
+		-- Check if the player has a specific privilege
+		rk:log("Fall Damage Mult: " .. mult)
+		return hp_change * mult -- Apply fall damage multiplier
 	end
 	return hp_change -- Allow other types of damage
 end, true)
