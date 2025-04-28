@@ -6,13 +6,14 @@ local txt = {
 }
 -- CONFIG
 local cfg = {
-	cube_count = 7, -- Number of wyrm cubes to place
-	max_cube_dist = 10000, -- Maximum distance from the spawn point to place wyrm cubes
-	monster_spawn_amt = 32, -- Probability of spawning a monster when radar is used
-	monster_spawn_time = 30, -- Time between random monster spawns
-	monster_spawn_delay = 60 * 3, -- Time before starting random monster spawns
-	supply_drop_range = 16, -- Will be double this number.
-	enable_logging = true, -- Enable or disable logging
+	cube_count = core.settings:get("wyrm_cube_cube_count") or 7, -- Number of wyrm cubes to place
+	max_cube_dist = core.settings:get("wyrm_cube_spawn_distance") or 10000, -- Maximum distance from the spawn point to place wyrm cubes
+	monster_spawn_amt = core.settings:get("wyrm_cube_monster_spawn_amt") or 32, -- Probability of spawning a monster when radar is used
+	monster_spawn_time = core.settings:get("wyrm_cube_monster_spawn_time") or 30, -- Time between random monster spawns
+	monster_spawn_delay = core.settings:get("wyrm_cube_spawn_") or (60 * 3), -- Time before starting random monster spawns
+	supply_drop_amt = core.settings:get("wyrm_cube_supply_drop_amt") or 5, -- Number of supply drops to spawn
+	supply_drop_range = core.settings:get("wyrm_cube_supply_drop_range") or 16, -- Will be double this number.
+	enable_logging = core.settings:get("wyrm_cube_enable_logging") or true, -- Enable or disable logging
 }
 
 -- Persistent mod storage
@@ -2150,7 +2151,7 @@ core.register_craftitem("wyrm_cube:supply_dropper", {
 	sunlight_propagates = true,
 	glow = 10,
 	on_use = function(itemstack, user, pointed_thing)
-		supply_drops(user, 5)
+		supply_drops(user, cfg.supply_drop_amt)
 		itemstack:take_item(1)
 		return itemstack
 	end,
@@ -2790,7 +2791,7 @@ core.register_chatcommand("wc_supply_drops", {
 	privs = { server = true },
 	func = function(name, param)
 		local player = core.get_player_by_name(name)
-		supply_drops(player, 5)
+		supply_drops(player, cfg.supply_drop_amt)
 	end,
 })
 core.register_chatcommand("wc_supply_drop", {
@@ -2952,7 +2953,7 @@ Well, good luck out there.
 		core.chat_send_player(player:get_player_name(), "You have received a wyrm Radar!")
 	end
 	core.after(5, function()
-		supply_drops(player, 5)
+		supply_drops(player, cfg.supply_drop_amt)
 	end)
 	core.after(10, function()
 		place_wyrm_cubes()

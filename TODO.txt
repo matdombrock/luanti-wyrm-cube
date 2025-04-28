@@ -13,4 +13,3 @@ KNOWN ISSUES:
 - wyrm Cubes can be placed and destroyed more than once
 - Logging should be off by default
 - Monsters can spawn in the clouds
-- TNT in supply drop broken

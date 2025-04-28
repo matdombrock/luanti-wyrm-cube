@@ -1,3 +1,23 @@
+
+wyrm_cube_cube_count (Wyrm Cube cube count) int 7
+
+wyrm_cube_spawn_distance (Wyrm Cube spawn distance) int 10000
+
+wyrm_cube_monster_spawn_amt (Wyrm Cube monster spawn amount) int 32
+
+wyrm_cube_monster_spawn_time (Wyrm Cube monster spawn time) int 30
+
+wyrm_cube_monster_spawn_delay (Wyrm Cube monster spawn delay) int 180
+
+wyrm_cube_supply_drop_amt (Wyrm Cube supply drop amount) int 5
+
+wyrm_cube_supply_drop_range (Wyrm Cube supply drop range) int 16
+
+wyrm_cube_enable_logging (Wyrm Cube logging) bool false
+
+
+
+
 # This file contains settings of minetest_game that can be changed in
 # minetest.conf
 
@@ -21,7 +41,7 @@ enable_lavacooling (Lavacooling) bool true
 
 #    If enabled, steel tools, torches and cobblestone will be given to new
 #    players.
-give_initial_stuff (Give initial items) bool false
+# give_initial_stuff (Give initial items) bool false
 
 #    If enabled, players respawn at the bed they last lay on instead of normal
 #    spawn.
@@ -79,3 +99,4 @@ enable_weather (Enable weather) bool true
 
 #    If enabled, non-player actions are logged
 log_non_player_actions (Log non-player action) bool false
+
