@@ -27,10 +27,17 @@ function Rkit:enable_log(enabled)
 end
 
 -- Splits a spece delimited string into a table
-function Rkit:string_split(str)
+-- Defaults to space if no delimiter is provided
+function Rkit:string_split(str, delimiter)
 	local result = {}
-	for word in string.gmatch(str, "%S+") do
-		table.insert(result, word)
+	delimiter = delimiter or "%s+" -- Default to space if no delimiter is provided
+	for match in str:gmatch("(.-)" .. delimiter) do
+		table.insert(result, match)
+	end
+	-- Add the final segment if it doesn't end with the delimiter
+	local last_match = str:match(".*" .. delimiter .. "(.*)$")
+	if last_match and last_match ~= "" then
+		table.insert(result, last_match)
 	end
 	return result
 end
@@ -116,7 +123,7 @@ function Rkit:spawn_particles(pos, image_path, color_str, max_vel)
 	image_path = image_path or "default_particle.png"
 	color_str = color_str or "#FF0000"
 	max_vel = max_vel or 3.0
-	for i = 1, math.random(1, 128) do
+	for i = 1, 128 do
 		core.add_particle({
 			pos = pos,
 			velocity = { x = math.random(-max_vel, max_vel), y = 0, z = math.random(-max_vel, max_vel) },
@@ -133,7 +140,7 @@ end
 function Rkit:spawn_particles_rainbow(pos, image_path, max_vel)
 	image_path = image_path or "default_particle.png"
 	max_vel = max_vel or 3.0
-	for i = 1, math.random(1, 128) do
+	for i = 1, 128 do
 		local color_str = string.format("#%06x", math.random(0, 0xFFFFFF))
 		core.add_particle({
 			pos = pos,
@@ -144,6 +151,90 @@ function Rkit:spawn_particles_rainbow(pos, image_path, max_vel)
 			texture = image_path .. ".png^[colorize:" .. color_str .. ":127",
 			glow = 10,
 		})
+	end
+end
+
+-- function Rkit:contruction(pos, bom, bp)
+-- 	if type(bp) ~= "table" then
+-- 		error("Expected 'bp' to be a table, got " .. type(bp))
+-- 	end
+-- 	local height = #bp
+-- 	local width = #bp[1]
+-- 	local length = #bp[1][1]
+--
+-- 	for y, layer in ipairs(bp) do
+-- 		for x, row in ipairs(layer) do
+-- 			for z, value in ipairs(row) do
+-- 				local block = bom[value] or "default:stone"
+-- 				core.log(block)
+-- 				local b_pos = { x = pos.x + x, y = pos.y + y, z = pos.z + z }
+-- 				core.set_node(b_pos, { name = block })
+-- 			end
+-- 		end
+-- 	end
+-- end
+
+--[[
+opt = {
+  speed = 1.0,
+  force_build = false, -- Even if not air
+  emerge = false, -- Force emerge
+  build_order = "blocks" -- (layers, instant, blocks)
+  random_order = false, -- Random order
+}
+--]]
+
+function Rkit:contruction(origin, bom, bp, opt)
+	if type(bp) ~= "table" then
+		error("Expected 'bp' to be a table, got " .. type(bp))
+	end
+
+	opt.speed = opt.speed or 1.0
+	opt.force_build = opt.force_build or true
+	opt.build_order = opt.build_order or "blocks" -- (blocks, layers, random, instant)
+	opt.pre_build = opt.pre_build or false
+	opt.pre_build_block = opt.pre_build_block or "default:glass" --"default:clay"
+
+	local height = #bp
+	for y, layer in ipairs(bp) do
+		core.log("Layer: " .. layer)
+		local split_rows = Rkit:string_split(layer, "\n")
+		local width = #split_rows
+		for x, row in ipairs(split_rows) do
+			local split_vals = Rkit:string_split(row)
+			local length = #split_vals
+			local layer_area = width * length
+			for z, value in ipairs(split_vals) do
+				local block = bom[value] or "default:stone"
+				local b_pos = { x = origin.x + x, y = origin.y + y, z = origin.z + z }
+				local current_node = core.get_node(b_pos)
+				if not opt.force_build and current_node.name ~= "air" then
+					core.log("Skipping " .. b_pos.x .. "," .. b_pos.y .. "," .. b_pos.z .. " - Not air")
+					goto continue
+				end
+				local delay = (y * layer_area + (x * z)) / (layer_area * opt.speed) -- Blocks
+				if opt.build_order == "layers" then
+					delay = (y * layer_area) / (layer_area * opt.speed)
+				end
+				if opt.build_order == "random" then
+					delay = math.random((height * layer_area) + (width * length)) / (layer_area * opt.speed)
+				end
+				if opt.build_order == "instant" then
+					delay = 0
+				end
+				core.after(delay, function()
+					if opt.pre_build then
+						core.set_node(b_pos, { name = opt.pre_build_block })
+						core.after(delay, function()
+							core.set_node(b_pos, block)
+						end)
+						return
+					end
+					core.set_node(b_pos, block)
+				end)
+			end
+		end
+		::continue::
 	end
 end
 

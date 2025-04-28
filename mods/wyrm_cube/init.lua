@@ -406,32 +406,12 @@ local function spawn_yurt(name, param)
 		return false, "Player not found!"
 	end
 
-	-- Get the block the player is pointing at
-	-- local player_pos = player:get_pos()
-	-- local look_dir = player:get_look_dir()
-	-- local start_pos = vector.add(player_pos, { x = 0, y = 1.5, z = 0 }) -- Eye level
-	-- local end_pos = vector.add(start_pos, vector.multiply(look_dir, 10)) -- 10 nodes ahead
-	-- local pointed_things = core.raycast(start_pos, end_pos, false, false)
-	-- local corner_stone = nil
-	-- for thing in pointed_things do
-	-- 	log("thing position: " .. core.pos_to_string(thing.under))
-	-- 	if thing.type == "node" then
-	-- 		corner_stone = thing.under -- The block the player is looking at
-	-- 		log("Pointed thing is: " .. thing.type)
-	-- 		break
-	-- 	end
-	-- end
-	-- if corner_stone == nil then
-	-- 	log("Pointed thing is nil!")
-	-- 	return false, "You must be pointing at a block!"
-	-- end
-
 	-- Dimensions of the house
 	local width = 7
 	local height = 4
 	local length = 7
 
-	corner_stone = player:get_pos()
+	local corner_stone = player:get_pos()
 	corner_stone.y = corner_stone.y - 1
 	corner_stone.x = corner_stone.x - math.floor(width / 2)
 	corner_stone.z = corner_stone.z - math.floor(length / 2)
@@ -440,8 +420,8 @@ local function spawn_yurt(name, param)
 	core.set_node(corner_stone, { name = "default:wood" })
 
 	-- Build the walls
-	for x = 0, width - 1 do
-		for y = 0, height - 1 do
+	for y = 0, height - 1 do
+		for x = 0, width - 1 do
 			for z = 0, length - 1 do
 				local block = "wool:white"
 				if x == 3 and y < 3 and z == 0 then
@@ -484,7 +464,6 @@ local function spawn_yurt(name, param)
 			}, { name = "default:wood" })
 		end
 	end
-
 	-- place a bed
 	core.set_node({
 		x = corner_stone.x + 1,

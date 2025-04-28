@@ -314,3 +314,56 @@ minetest.register_chatcommand("su", {
 		return minetest.registered_chatcommands["grantme"].func(name, "all")
 	end,
 })
+
+local x = {
+	[[
+s s s s
+s s s s
+s s s s
+s s s s
+]],
+	[[
+s s s s
+s a a s
+s a a s
+s s d s
+]],
+	[[
+s s s s
+s a a s
+s a a s
+s s a s
+]],
+	[[
+s s s s
+s a a s
+s a a s
+s s s s
+]],
+	[[
+w w w w
+w w w w
+w w w w
+w w w w
+]],
+}
+
+minetest.register_chatcommand("construct_test", {
+	description = "...",
+	func = function(name, param)
+		local pos = minetest.get_player_by_name(name):get_pos()
+		pos.y = pos.y - 2
+		local bom = {
+			a = { name = "air" },
+			s = { name = "default:stone" },
+			w = { name = "default:wood" },
+			d = { name = "doors:door_wood_a", param2 = 3 },
+		}
+		local bp = x
+		local opt = {
+			build_order = "blocks",
+			pre_build = true,
+		}
+		Rkit:contruction(pos, bom, bp, opt)
+	end,
+})
