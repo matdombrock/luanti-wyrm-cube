@@ -81,6 +81,72 @@ function Rkit:pchance(percent)
 	return math.random(0.0, 100.0) <= percent
 end
 
+-- Write a simple message to the HUD
+function Rkit:hud_msg(user, text, seconds)
+	local bg_hud_id = user:hud_add({
+		hud_elem_type = "image",
+		position = { x = 0.5, y = 0.1 },
+		offset = { x = 0, y = 0 },
+		scale = { x = 850, y = 150 },
+		alignment = { x = 0, y = 0 },
+		text = "ui_bg.png",
+	})
+	-- Add HUD text
+	local hud_id = user:hud_add({
+		hud_elem_type = "text",
+		position = { x = 0.5, y = 0.1 },
+		offset = { x = 0, y = 0 },
+		text = text,
+		alignment = { x = 0, y = 0 },
+		scale = { x = 100, y = 100 },
+		size = { x = 2, y = 0 },
+		style = 1,
+		number = 0xFFFF99,
+	})
+	core.after(seconds or 3, function()
+		if user and user:is_player() then
+			user:hud_remove(hud_id)
+			user:hud_remove(bg_hud_id)
+		end
+	end)
+end
+
+-- Simple particle ont-shot at a poistion (rainbow colors)
+function Rkit:spawn_particles(pos, image_path, color_str, max_vel)
+	image_path = image_path or "default_particle.png"
+	color_str = color_str or "#FF0000"
+	max_vel = max_vel or 3.0
+	for i = 1, math.random(1, 128) do
+		core.add_particle({
+			pos = pos,
+			velocity = { x = math.random(-max_vel, max_vel), y = 0, z = math.random(-max_vel, max_vel) },
+			acceleration = { x = 0, y = 0.15 + math.random(), z = 0 },
+			expirationtime = 10,
+			size = 3,
+			texture = image_path .. ".png^[colorize:" .. color_str .. ":127",
+			glow = 10,
+		})
+	end
+end
+
+-- Simple particle ont-shot at a poistion (rainbow colors)
+function Rkit:spawn_particles_rainbow(pos, image_path, max_vel)
+	image_path = image_path or "default_particle.png"
+	max_vel = max_vel or 3.0
+	for i = 1, math.random(1, 128) do
+		local color_str = string.format("#%06x", math.random(0, 0xFFFFFF))
+		core.add_particle({
+			pos = pos,
+			velocity = { x = math.random(-max_vel, max_vel), y = 0, z = math.random(-max_vel, max_vel) },
+			acceleration = { x = 0, y = 0.15 + math.random(), z = 0 },
+			expirationtime = 10,
+			size = 3,
+			texture = image_path .. ".png^[colorize:" .. color_str .. ":127",
+			glow = 10,
+		})
+	end
+end
+
 -- Single Instance Stuff
 local rk = Rkit:new("rkit_single")
 

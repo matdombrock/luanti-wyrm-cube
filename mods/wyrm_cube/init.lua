@@ -1,4 +1,6 @@
--- Wyrm Cubes Mod for core
+-- Wyrm Cubes Mod for Luanti
+local rk = Rkit:new("wyrm_cube")
+
 local modpath = core.get_modpath(core.get_current_modname())
 local txt = {
 	intro = io.open(modpath .. "/txt/intro.txt", "r"):read("*a"),
@@ -13,7 +15,7 @@ local cfg = {
 	monster_spawn_delay = core.settings:get("wyrm_cube_spawn_") or (60 * 3), -- Time before starting random monster spawns
 	supply_drop_amt = core.settings:get("wyrm_cube_supply_drop_amt") or 5, -- Number of supply drops to spawn
 	supply_drop_range = core.settings:get("wyrm_cube_supply_drop_range") or 16, -- Will be double this number.
-	enable_logging = core.settings:get("wyrm_cube_enable_logging") or true, -- Enable or disable logging
+	enable_logging = core.settings:get("wyrm_cube_enable_logging"), -- Enable or disable logging
 }
 
 -- Persistent mod storage
@@ -26,6 +28,7 @@ local wyrm_cubes = {}
 -- UTILITY FUNCTIONS
 --
 
+-- Still in use over Rkit so that it can be toggled more easily
 local function log(message)
 	if not cfg.enable_logging then
 		return
@@ -33,59 +36,8 @@ local function log(message)
 	core.log("[Wyrm Cube] " .. message)
 end
 
--- Percent chance
-local function pchance(percent)
-	return math.random(0.0, 100.0) <= percent
-end
-
--- Returns true if the string contains the substring
-local function string_includes(str, substring)
-	return string.find(str, substring, 1, true) ~= nil
-end
-
--- Write a message to the HUD
-local function hud_msg(user, text, seconds)
-	local bg_hud_id = user:hud_add({
-		hud_elem_type = "image",
-		position = { x = 0.5, y = 0.1 },
-		offset = { x = 0, y = 0 },
-		scale = { x = 850, y = 150 },
-		alignment = { x = 0, y = 0 },
-		text = "ui_bg.png",
-	})
-	-- Add HUD text
-	local hud_id = user:hud_add({
-		hud_elem_type = "text",
-		position = { x = 0.5, y = 0.1 },
-		offset = { x = 0, y = 0 },
-		text = text,
-		alignment = { x = 0, y = 0 },
-		scale = { x = 100, y = 100 },
-		size = { x = 2, y = 0 },
-		style = 1,
-		number = 0xFFFF99,
-	})
-	core.after(seconds or 3, function()
-		if user and user:is_player() then
-			user:hud_remove(hud_id)
-			user:hud_remove(bg_hud_id)
-		end
-	end)
-end
-
 local function spawn_particles(pos)
-	for i = 1, math.random(1, 128) do
-		local color_str = string.format("#%06x", math.random(0, 0xFFFFFF))
-		core.add_particle({
-			pos = pos,
-			velocity = { x = math.random(-3.0, 3.0), y = 0, z = math.random(-3.0, 3.0) },
-			acceleration = { x = 0, y = 0.1 + math.random(), z = 0 },
-			expirationtime = 10,
-			size = 3,
-			texture = "wyrm_line_particle.png^[colorize:" .. color_str .. ":127",
-			glow = 10,
-		})
-	end
+	rk:spawn_particles_rainbow(pos, "wyrm_line_particle", 3.0)
 	core.sound_play("woosh", {
 		pos = pos,
 		max_hear_distance = 128,
@@ -95,18 +47,7 @@ local function spawn_particles(pos)
 end
 
 local function spawn_particles_bad(pos)
-	for i = 1, math.random(1, 128) do
-		local color_str = "#FF0000"
-		core.add_particle({
-			pos = pos,
-			velocity = { x = math.random(-3.0, 3.0), y = 0, z = math.random(-3.0, 3.0) },
-			acceleration = { x = 0, y = 0.1 + math.random(), z = 0 },
-			expirationtime = 10,
-			size = 3,
-			texture = "wyrm_line_particle.png^[colorize:" .. color_str .. ":127",
-			glow = 10,
-		})
-	end
+	rk:spawn_particles(pos, "wyrm_line_particle", "#FF0000", 3.0)
 	core.sound_play("bad_spawn", {
 		pos = pos,
 		max_hear_distance = 128,
@@ -145,7 +86,6 @@ local function spawn_monster(name)
 		and node_below ~= "air"
 		and node_below ~= "default:water_source"
 	then
-		-- Spawn the slime entity
 		local entity = core.add_entity(spawn_pos, "mobs:oerkki")
 		spawn_particles_bad(spawn_pos)
 		if entity then
@@ -171,28 +111,6 @@ local function monster_spawn_timer(player)
 			monster_spawn_timer(player)
 		end)
 	end
-end
-
-local function no_dmg(player, seconds)
-	-- Disable all damage for 5 seconds
-	seconds = seconds or 5
-	player:set_hp(player:get_hp()) -- Ensure current HP is preserved
-	player:set_armor_groups({ immortal = 1 })
-	log(player.get_player_name(player) .. " Damage disabled for " .. seconds .. " seconds.")
-
-	-- Re-enable damage after 5 seconds
-	core.after(seconds, function()
-		if player:is_player() then
-			player:set_armor_groups({ immortal = 0 }) -- Restore default armor groups
-			log(player.get_player_name(player) .. " Damage enabled again.")
-		end
-	end)
-end
-
-local function fall_dmg(player, mult)
-	local player_name = player:get_player_name()
-	mod_storage:set_float(player_name .. "_fall_dmg_mult", mult)
-	log(player_name .. " movement changed" .. mult)
 end
 
 local move_speeds = {
@@ -221,66 +139,16 @@ local function set_move(player, move)
 			sneak_speed = move.sneak, -- Set player sneak speed
 			gravity = move.gravity, -- Set player gravity
 		})
-		fall_dmg(playerx, move.fall)
+		rk:fall_dmg(playerx, move.fall)
 		::continue::
 	end
 end
 
 -- Draw a GUI element telling the player the potion will expire
 local function warn_potion(user, potion_name, seconds)
-	local bg_hud_id = user:hud_add({
-		hud_elem_type = "image",
-		position = { x = 0.5, y = 0.1 },
-		offset = { x = 0, y = 0 },
-		scale = { x = 650, y = 150 },
-		alignment = { x = 0, y = 0 },
-		text = "ui_bg.png",
-	})
-	-- Add HUD text
-	local hud_id = user:hud_add({
-		hud_elem_type = "text",
-		position = { x = 0.5, y = 0.1 },
-		offset = { x = 0, y = 0 },
-		text = "POTION:\n" .. potion_name .. " (" .. seconds .. "s)",
-		alignment = { x = 0, y = 0 },
-		scale = { x = 100, y = 100 },
-		size = { x = 2, y = 0 },
-		style = 1,
-		number = 0xFFFF99,
-	})
-	core.after(3, function()
-		if user and user:is_player() then
-			user:hud_remove(hud_id)
-			user:hud_remove(bg_hud_id)
-		end
-	end)
+	rk:hud_msg(user, "POTION:\n" .. potion_name .. " (" .. seconds .. "s)", 3)
 	core.after(seconds - 3, function()
-		local bg_hud_id2 = user:hud_add({
-			hud_elem_type = "image",
-			position = { x = 0.5, y = 0.1 },
-			offset = { x = 0, y = 0 },
-			scale = { x = 650, y = 150 },
-			alignment = { x = 0, y = 0 },
-			text = "ui_bg.png",
-		})
-		-- Add HUD text
-		local hud_id2 = user:hud_add({
-			hud_elem_type = "text",
-			position = { x = 0.5, y = 0.1 },
-			offset = { x = 0, y = 0 },
-			text = "POTION WEARING OFF:\n" .. potion_name,
-			alignment = { x = 0, y = 0 },
-			scale = { x = 100, y = 100 },
-			size = { x = 2, y = 0 },
-			style = 1,
-			number = 0xFFFF99,
-		})
-		core.after(3, function()
-			if user and user:is_player() then
-				user:hud_remove(hud_id2)
-				user:hud_remove(bg_hud_id2)
-			end
-		end)
+		rk:hud_msg(user, "POTION WEARING OFF:\n" .. potion_name, 3)
 	end)
 end
 
@@ -479,10 +347,10 @@ local function supply_drop(name)
 	dist_x = dist_x + math.random(0, dist_x)
 	local dist_z = cfg.supply_drop_range
 	dist_z = dist_z + math.random(0, dist_z)
-	if pchance(50) then
+	if rk:pchance(50) then
 		dist_x = -dist_x
 	end
-	if pchance(50) then
+	if rk:pchance(50) then
 		dist_z = -dist_z
 	end
 	local dir = { x = dist_x, y = 48, z = dist_z }
@@ -515,7 +383,7 @@ local function supply_drop(name)
 	for _, item in ipairs(supply_drop_items) do
 		local chance = item[1]
 		local item_name = item[2]
-		if pchance(chance) then
+		if rk:pchance(chance) then
 			inv:add_item("main", item_name)
 		end
 	end
@@ -539,31 +407,30 @@ local function spawn_yurt(name, param)
 	end
 
 	-- Get the block the player is pointing at
-	local player_pos = player:get_pos()
-	local look_dir = player:get_look_dir()
-	local start_pos = vector.add(player_pos, { x = 0, y = 1.5, z = 0 }) -- Eye level
-	local end_pos = vector.add(start_pos, vector.multiply(look_dir, 10)) -- 10 nodes ahead
-	local pointed_things = core.raycast(start_pos, end_pos, false, false)
-	local corner_stone = nil
-	for thing in pointed_things do
-		log("thing position: " .. core.pos_to_string(thing.under))
-		if thing.type == "node" then
-			corner_stone = thing.under -- The block the player is looking at
-			log("Pointed thing is: " .. thing.type)
-			break
-		end
-	end
-	if corner_stone == nil then
-		log("Pointed thing is nil!")
-		return false, "You must be pointing at a block!"
-	end
+	-- local player_pos = player:get_pos()
+	-- local look_dir = player:get_look_dir()
+	-- local start_pos = vector.add(player_pos, { x = 0, y = 1.5, z = 0 }) -- Eye level
+	-- local end_pos = vector.add(start_pos, vector.multiply(look_dir, 10)) -- 10 nodes ahead
+	-- local pointed_things = core.raycast(start_pos, end_pos, false, false)
+	-- local corner_stone = nil
+	-- for thing in pointed_things do
+	-- 	log("thing position: " .. core.pos_to_string(thing.under))
+	-- 	if thing.type == "node" then
+	-- 		corner_stone = thing.under -- The block the player is looking at
+	-- 		log("Pointed thing is: " .. thing.type)
+	-- 		break
+	-- 	end
+	-- end
+	-- if corner_stone == nil then
+	-- 	log("Pointed thing is nil!")
+	-- 	return false, "You must be pointing at a block!"
+	-- end
 
 	-- Dimensions of the house
 	local width = 7
 	local height = 4
 	local length = 7
 
-	-- Ignore the logic above and just use the player's position
 	corner_stone = player:get_pos()
 	corner_stone.y = corner_stone.y - 1
 	corner_stone.x = corner_stone.x - math.floor(width / 2)
@@ -1207,7 +1074,7 @@ local function spawn_end_callback(pos, action, num_calls_remaining, context)
 					}, { name = "air" })
 				else
 					local chance = 100 - (y / (t_height * 3)) * 100
-					if pchance(chance) then
+					if rk:pchance(chance) then
 						core.set_node({
 							x = pos.x + x,
 							y = pos.y + y + t_height,
@@ -1298,14 +1165,14 @@ local function spawn_end_callback(pos, action, num_calls_remaining, context)
 			end
 		end
 		if y % 4 == 0 then
-			if pchance(50) then
+			if rk:pchance(50) then
 				pos.x = pos.x + 1
 			end
-			if pchance(50) then
+			if rk:pchance(50) then
 				pos.x = pos.x - 1
 			end
 		end
-		if pchance(50) then
+		if rk:pchance(50) then
 			pos.z = pos.z + 1
 		end
 	end
@@ -1769,7 +1636,7 @@ local function calculate_transmute_rate(meta, stack)
 		for _, item in ipairs(transmutation_rates) do
 			local item_name = item[1]
 			local item_rate = item[2]
-			if string_includes(stack:get_name(), item_name) then
+			if rk:string_includes(stack:get_name(), item_name) then
 				transmute_rate = item_rate
 				break
 			end
@@ -1946,34 +1813,7 @@ core.register_tool("wyrm_cube:wyrm_radar", {
 			log(user:get_player_name() .. " Distance: " .. nearest_distance)
 			log(user:get_player_name() .. " Remaining Wyrm Cubes: " .. #wyrm_cubes)
 
-			local bg_hud_id = user:hud_add({
-				hud_elem_type = "image",
-				position = { x = 0.5, y = 0.1 },
-				offset = { x = 0, y = 0 },
-				scale = { x = 650, y = 150 },
-				alignment = { x = 0, y = 0 },
-				text = "ui_bg.png",
-			})
-			-- Add HUD text
-			local hud_id = user:hud_add({
-				hud_elem_type = "text",
-				position = { x = 0.5, y = 0.1 },
-				offset = { x = 0, y = 0 },
-				text = "DIST: " .. math.floor(nearest_distance) .. "\nCUBE: #" .. #wyrm_cubes,
-				alignment = { x = 0, y = 0 },
-				scale = { x = 100, y = 100 },
-				size = { x = 2, y = 0 },
-				style = 1,
-				number = 0xFFFF99,
-			})
-
-			-- Automatically remove the text after 10 seconds (optional)
-			core.after(6, function()
-				if user and user:is_player() then
-					user:hud_remove(hud_id)
-					user:hud_remove(bg_hud_id)
-				end
-			end)
+			rk:hud_msg(user, "Distance: " .. math.floor(nearest_distance) .. "\nCUBE: #" .. #wyrm_cubes, 6)
 
 			-- Render a line of particles pointing to the wyrm cube
 			for i = 1, steps do
@@ -1997,7 +1837,6 @@ core.register_tool("wyrm_cube:wyrm_radar", {
 				loop = false,
 			})
 		else
-			log(user:get_player_name() .. " No Wyrm Cubes found!")
 			core.sound_play("scan_bad", {
 				pos = player_pos,
 				gain = 10.0,
@@ -2040,7 +1879,7 @@ core.register_tool("wyrm_cube:meta_scanner", {
 				-- Player is looking at a node
 				local node = core.get_node(pointed.under)
 				local node_name = node.name
-				hud_msg(user, "NODE:\n" .. node_name, 3)
+				rk:hud_msg(user, "NODE:\n" .. node_name, 3)
 				spawn_particles(pointed.under)
 				break
 			elseif pointed.type == "object" then
@@ -2048,7 +1887,7 @@ core.register_tool("wyrm_cube:meta_scanner", {
 				local obj = pointed.ref
 				if obj and obj:get_luaentity() then
 					local entity_name = obj:get_luaentity().description or obj:get_luaentity().name
-					hud_msg(user, "ENTITY:\n" .. entity_name, 3)
+					rk:hud_msg(user, "ENTITY:\n" .. entity_name, 3)
 					spawn_particles(pointed.under)
 				elseif obj and obj:is_player() then
 					goto continue
@@ -2271,34 +2110,7 @@ core.register_craftitem("wyrm_cube:radio", {
 			max_hear_distance = 100,
 			loop = false,
 		})
-		local bg_hud_id = user:hud_add({
-			hud_elem_type = "image",
-			position = { x = 0.5, y = 0.1 },
-			offset = { x = 0, y = 0 },
-			scale = { x = 650, y = 150 },
-			alignment = { x = 0, y = 0 },
-			text = "ui_bg.png",
-		})
-		-- Add HUD text
-		local hud_id = user:hud_add({
-			hud_elem_type = "text",
-			position = { x = 0.5, y = 0.1 },
-			offset = { x = 0, y = 0 },
-			text = text,
-			alignment = { x = 0, y = 0 },
-			scale = { x = 100, y = 100 },
-			size = { x = 2, y = 0 },
-			style = 1,
-			number = 0xFFFF99,
-		})
-
-		-- Automatically remove the text after 10 seconds (optional)
-		core.after(2, function()
-			if user and user:is_player() then
-				user:hud_remove(hud_id)
-				user:hud_remove(bg_hud_id)
-			end
-		end)
+		rk:hud_msg(user, text, 2)
 		return itemstack
 	end,
 })
@@ -2467,7 +2279,7 @@ core.register_craftitem("wyrm_cube:potion_immunity_1", {
 	sunlight_propagates = true,
 	glow = 10,
 	on_use = function(itemstack, user, pointed_thing)
-		no_dmg(user:get_player_name(), 6)
+		rk:no_dmg(user:get_player_name(), 6)
 		warn_potion(user, "Immunity 1", 6)
 		core.after(6, function()
 			spawn_particles(user:get_pos())
@@ -2486,7 +2298,7 @@ core.register_craftitem("wyrm_cube:potion_immunity_2", {
 	sunlight_propagates = true,
 	glow = 10,
 	on_use = function(itemstack, user, pointed_thing)
-		no_dmg(user:get_player_name(), 30)
+		rk:no_dmg(user:get_player_name(), 30)
 		warn_potion(user, "Immunity 2", 30)
 		core.after(30, function()
 			spawn_particles(user:get_pos())
@@ -2505,7 +2317,7 @@ core.register_craftitem("wyrm_cube:potion_immunity_3", {
 	sunlight_propagates = true,
 	glow = 10,
 	on_use = function(itemstack, user, pointed_thing)
-		no_dmg(user:get_player_name(), 120)
+		rk:no_dmg(user:get_player_name(), 120)
 		warn_potion(user, "Immunity 3", 120)
 		core.after(120, function()
 			spawn_particles(user:get_pos())
@@ -2575,7 +2387,7 @@ core.register_craftitem("wyrm_cube:donut", {
 	glow = 10,
 	on_use = function(itemstack, user, pointed_thing)
 		user:set_hp(200)
-		no_dmg(user:get_player_name(), 30)
+		rk:no_dmg(user:get_player_name(), 30)
 		set_move(user:get_player_name(), move_speeds.doom)
 		warn_potion(user, "Donut", 30)
 		core.after(30, function()
@@ -2596,10 +2408,10 @@ core.register_craftitem("wyrm_cube:potion_cat", {
 	sunlight_propagates = true,
 	glow = 10,
 	on_use = function(itemstack, user, pointed_thing)
-		fall_dmg(user, 0.1)
+		rk:fall_dmg(user, 0.1)
 		warn_potion(user, "Cat", 16)
 		core.after(16, function()
-			fall_dmg(user, 1)
+			rk:fall_dmg(user, 1)
 			spawn_particles(user:get_pos())
 		end)
 		spawn_particles(user:get_pos())
@@ -2616,10 +2428,10 @@ core.register_craftitem("wyrm_cube:potion_feather", {
 	sunlight_propagates = true,
 	glow = 10,
 	on_use = function(itemstack, user, pointed_thing)
-		fall_dmg(user, 0)
+		rk:fall_dmg(user, 0)
 		warn_potion(user, "Feather", 60)
 		core.after(60, function()
-			fall_dmg(user, 1)
+			rk:fall_dmg(user, 1)
 			spawn_particles(user:get_pos())
 		end)
 		spawn_particles(user:get_pos())
@@ -2850,10 +2662,6 @@ core.register_chatcommand("wc_wcc", {
 core.register_on_joinplayer(function(player)
 	-- set the time speed
 	core.setting_set("time_speed", 256)
-	core.chat_send_player(
-		player:get_player_name(),
-		"Wyrm Cubes mod loaded with " .. #wyrm_cubes .. " wyrm cubes in the world"
-	)
 
 	core.sound_play("intro", {
 		pos = player:get_pos(),
@@ -2899,7 +2707,7 @@ core.register_on_joinplayer(function(player)
 	end)
 
 	-- Reset fall damage
-	mod_storage:set_float(player:get_player_name() .. "_fall_dmg_mult", 1)
+	mod_storage:set_float(player:get_player_name() .. "_rk:fall_dmg_mult", 1)
 
 	-- Reset cloud spawning
 	-- Must be re-init by player
@@ -2963,7 +2771,7 @@ Well, good luck out there.
 	local pos = player:get_pos()
 	local new_position = { x = pos.x, y = 128, z = pos.z }
 	player:set_pos(new_position)
-	no_dmg(player, 10) -- Disable damage for 5 seconds
+	rk:no_dmg(player, 10) -- Disable damage for 5 seconds
 
 	core.after(15, function()
 		local formspec = string.format(
@@ -2985,7 +2793,7 @@ end)
 
 core.register_on_player_hpchange(function(player, hp_change, reason)
 	local player_name = player:get_player_name()
-	local mult = mod_storage:get_float(player_name .. "_fall_dmg_mult") or 1
+	local mult = mod_storage:get_float(player_name .. "_rk:fall_dmg_mult") or 1
 	if mult == 0 then
 		player:set_physics_override({
 			fall_damage = false, -- Disables fall damage completely
