@@ -6,7 +6,7 @@ function Rkit:new(mod_name)
 	local instance = setmetatable({}, Rkit) -- Create a new table and attach the metatable
 	instance.mod_name = mod_name or "unknown_mod"
 	instance.enable_logging = true
-	Rkit.player_state = {
+	Rkit.player_state = { -- Static
 		"null" == {
 			fall_dmg = 1,
 		},
@@ -14,6 +14,7 @@ function Rkit:new(mod_name)
 	return instance
 end
 
+-- Print a basic message to the console
 function Rkit:log(message)
 	if not self.enable_logging then
 		return
@@ -34,11 +35,13 @@ function Rkit:string_split(str)
 	return result
 end
 
+-- Returns true if the string contains the substring
 function Rkit:string_includes(str, substring)
 	return string.find(str, substring, 1, true) ~= nil
 end
 
 -- Sets player immunity with an optional timeout
+-- This does not use the damage handler
 function Rkit:no_dmg(player, seconds)
 	player:set_hp(player:get_hp()) -- Ensure current HP is preserved
 	player:set_armor_groups({ immortal = 1 })
@@ -57,16 +60,17 @@ function Rkit:no_dmg(player, seconds)
 end
 
 -- Sets fall damage multiplier with an optional timeout
+-- There is only one damage handler shared between all instances of Rkit
 function Rkit:fall_dmg(player, mult, seconds)
 	local player_name = player:get_player_name()
-	self.player_state[player_name].fall_damage = mult
+	Rkit.player_state[player_name].fall_damage = mult
 	if not seconds then
 		return true
 	end
 	-- Re-enable fall damage after N seconds
 	core.after(seconds, function()
 		if player:is_player() then
-			self.player_state[player_name].fall_damage = 1 -- Restore default fall damage
+			Rkit.player_state[player_name].fall_damage = 1 -- Restore default fall damage
 			core.chat_send_player(player_name, "Fall damage enabled again.")
 		end
 	end)
@@ -82,7 +86,10 @@ local rk = Rkit:new("rkit_single")
 
 core.register_on_player_hpchange(function(player, hp_change, reason)
 	local player_name = player:get_player_name()
-	local mult = Rkit.player_state[player_name].fall_damage or 1
+	local mult = 1
+	if Rkit.player_state[player_name] then -- Static
+		mult = Rkit.player_state[player_name].fall_damage
+	end
 	if reason.type == "fall" then
 		-- Check if the player has a specific privilege
 		rk:log("Fall Damage Mult: " .. mult)
