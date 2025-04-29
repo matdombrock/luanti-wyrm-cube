@@ -42,6 +42,14 @@ function Rkit:string_split(str, delimiter)
 	return result
 end
 
+function array_reverse(array)
+	local reversed = {}
+	for i = #array, 1, -1 do
+		table.insert(reversed, array[i])
+	end
+	return reversed
+end
+
 -- Returns true if the string contains the substring
 function Rkit:string_includes(str, substring)
 	return string.find(str, substring, 1, true) ~= nil
@@ -154,50 +162,87 @@ function Rkit:spawn_particles_rainbow(pos, image_path, max_vel)
 	end
 end
 
--- function Rkit:contruction(pos, bom, bp)
--- 	if type(bp) ~= "table" then
--- 		error("Expected 'bp' to be a table, got " .. type(bp))
--- 	end
--- 	local height = #bp
--- 	local width = #bp[1]
--- 	local length = #bp[1][1]
---
--- 	for y, layer in ipairs(bp) do
--- 		for x, row in ipairs(layer) do
--- 			for z, value in ipairs(row) do
--- 				local block = bom[value] or "default:stone"
--- 				core.log(block)
--- 				local b_pos = { x = pos.x + x, y = pos.y + y, z = pos.z + z }
--- 				core.set_node(b_pos, { name = block })
--- 			end
--- 		end
--- 	end
--- end
+core.register_node("_rkit:scaffold", {
+	description = "Scaffolding",
+	tiles = { "scaffold.png" },
+	is_ground_content = false,
+	light_source = 14,
+	paramtype = "light",
+	sunlight_propagates = true,
+	glow = 10,
+	drawtype = "glasslike", -- Allows transparency and gives a glass-like appearance
+})
+function Rkit:contruction(origin, bom, bp, callback, opt)
+	opt.speed = opt.speed or 1.0 -- How fast to build
+	opt.force_build = opt.force_build or true -- Overwrite non-air blocks
+	opt.pre_clear = opt.pre_clear or true -- Place air blocks before building (does not emerge)
+	opt.auto_emerge = opt.auto_emerge or true -- Automatically emerge the area before building
+	opt.build_order = opt.build_order or "blocks" -- (blocks, layers, random, instant)
+	opt.scaffold = opt.scaffold or true -- Place scaffolding before building
+	opt.scaffold_block = opt.scaffold_block or "_rkit:scaffold" -- Block to use for scaffolding
+	opt.rotate = opt.rotate or 0 -- Rotate the construction (45 degree increments)
 
---[[
-opt = {
-  speed = 1.0,
-  force_build = false, -- Even if not air
-  emerge = false, -- Force emerge
-  build_order = "blocks" -- (layers, instant, blocks)
-  random_order = false, -- Random order
-}
---]]
-
-function Rkit:contruction(origin, bom, bp, opt)
 	if type(bp) ~= "table" then
 		error("Expected 'bp' to be a table, got " .. type(bp))
 	end
 
-	opt.speed = opt.speed or 1.0
-	opt.force_build = opt.force_build or true
-	opt.build_order = opt.build_order or "blocks" -- (blocks, layers, random, instant)
-	opt.pre_build = opt.pre_build or false
-	opt.pre_build_block = opt.pre_build_block or "default:glass" --"default:clay"
+	-- Rotate construction layer 90 degrees clockwise
+	local function rotate_construction_layer(input)
+		local lines = {}
+		for line in input:gmatch("[^\n]+") do
+			table.insert(lines, line)
+		end
 
+		local rotated = {}
+		local num_rows = #lines
+		local num_cols = #lines[1]:gsub(" ", "") -- Count non-space characters
+
+		for col = 1, num_cols do
+			local new_row = {}
+			for row = num_rows, 1, -1 do
+				table.insert(new_row, lines[row]:sub(col * 2 - 1, col * 2 - 1)) -- Extract character
+			end
+			table.insert(rotated, table.concat(new_row, " "))
+		end
+
+		return table.concat(rotated, "\n")
+	end
+
+	-- Init build record
+	local build_record = {}
+	for key, _ in pairs(bom) do
+		build_record[key] = {}
+	end
+
+	local pending = 0
+	local place_node = function(pos, block)
+		local ctx = { block = block }
+		local emerge_cb = function(pos_target, action, num_calls_remaining, context)
+			core.set_node(pos, context.block)
+			pending = pending - 1
+			if (pending == 0) and callback then
+				callback(build_record)
+			end
+		end
+		if opt.auto_emerge then
+			core.emerge_area(pos, pos, emerge_cb, ctx)
+		else
+			core.set_node(pos, block)
+			pending = pending - 1
+			if (pending == 0) and callback then
+				callback(build_record)
+			end
+		end
+	end
+
+	local default_block = { name = "default:stone" }
 	local height = #bp
+
+	-- Construction loop
 	for y, layer in ipairs(bp) do
-		core.log("Layer: " .. layer)
+		for _ = 1, opt.rotate do
+			layer = rotate_construction_layer(layer)
+		end
 		local split_rows = Rkit:string_split(layer, "\n")
 		local width = #split_rows
 		for x, row in ipairs(split_rows) do
@@ -205,7 +250,10 @@ function Rkit:contruction(origin, bom, bp, opt)
 			local length = #split_vals
 			local layer_area = width * length
 			for z, value in ipairs(split_vals) do
-				local block = bom[value] or "default:stone"
+				local block = bom[value] or default_block
+				if block.param2 then
+					block.param2 = (block.param2 + opt.rotate) % 4
+				end
 				local b_pos = { x = origin.x + x, y = origin.y + y, z = origin.z + z }
 				local current_node = core.get_node(b_pos)
 				if not opt.force_build and current_node.name ~= "air" then
@@ -222,15 +270,24 @@ function Rkit:contruction(origin, bom, bp, opt)
 				if opt.build_order == "instant" then
 					delay = 0
 				end
+				if build_record[value] == nil then
+					-- build_record[value] = {}
+					error("Invalid block type: " .. value)
+				end
+				table.insert(build_record[value], b_pos)
+				pending = pending + 1
+				if opt.pre_clear then
+					core.set_node(b_pos, { name = "air" })
+				end
 				core.after(delay, function()
-					if opt.pre_build then
-						core.set_node(b_pos, { name = opt.pre_build_block })
+					if opt.scaffold then
+						core.set_node(b_pos, { name = opt.scaffold_block })
 						core.after(delay, function()
-							core.set_node(b_pos, block)
+							place_node(b_pos, block)
 						end)
 						return
 					end
-					core.set_node(b_pos, block)
+					place_node(b_pos, block)
 				end)
 			end
 		end
