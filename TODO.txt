@@ -5,7 +5,22 @@ WISHLIST:
 - Custom Bosses
 - More Music
 - Decrease transmute rates
-- Everyone should TP up
+- Everyone should TP up at end
+
+Auto-room system
+Take a single layer and extrude it to the room_height
+Add ceiling and floor layers
+Handles doors automatically
+This returns a blueprint table
+w w w w w w w w w
+w . T . . . T . w
+w . . . s . . . w
+w . . . L . . . w
+w . . . . . . . w
+w . . . . . . . w
+w . . . . . . . w
+w . t c . c t . w
+w w w w w w w w w
 
 KNOWN ISSUES:
 - Clouds sometimes don't clear when exiting the game
