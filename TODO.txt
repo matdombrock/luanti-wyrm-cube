@@ -5,7 +5,7 @@ WISHLIST:
 - Custom Bosses
 - More Music
 - Decrease transmute rates
-- Everyone should TP up
+- Everyone should TP up at end
 
 KNOWN ISSUES:
 - Clouds sometimes don't clear when exiting the game

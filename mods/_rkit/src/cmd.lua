@@ -187,7 +187,7 @@ minetest.register_chatcommand("tpr", {
 		local new_position = { x = random_x, y = random_y, z = random_z }
 		player:set_pos(new_position)
 
-		Rkit.no_dmg(player, 5) -- Disable damage for 5 seconds
+		-- Rkit.no_dmg(player, 5) -- Disable damage for 5 seconds
 
 		return true, "Teleported to random location: " .. minetest.pos_to_string(new_position)
 	end,
