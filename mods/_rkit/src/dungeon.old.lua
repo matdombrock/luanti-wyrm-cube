@@ -35,7 +35,7 @@ X . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 -- cfg
 local dungeon_size = 4
-local dungeon_layers = 4
+local dungeon_layers = 2
 local room_height = 6
 local room_size = 31
 
@@ -45,22 +45,22 @@ local bom_dungeon = {
 	-- s = { name = "default:stone" },
 	s = { name = "default:stonebrick" },
 	l = { name = "wool:white" },
-	L = { name = "default:ladder_steel", rotate = 2 },
+	L = { name = "default:ladder_steel", param2 = 3 },
 	w = { name = "default:wood" },
 	W = { name = "default:acacia_wood" },
 	o = { name = "default:glass" },
-	t = { name = "default:torch_wall", rotate = 0 },
-	T = { name = "default:torch_wall", rotate = 2 },
-	b = { name = "beds:bed_bottom", rotation = 1 },
-	B = { name = "beds:bed_top", rotate = 1 },
-	h = { name = "default:bookshelf", rotate = 1 },
-	c = { name = "default:chest", rotate = 1 },
+	t = { name = "default:torch_wall", param2 = 2 },
+	T = { name = "default:torch_wall", param2 = 3 },
+	b = { name = "beds:bed_bottom", param2 = 1 },
+	B = { name = "beds:bed_top", param2 = 1 },
+	h = { name = "default:bookshelf", param2 = 1 },
+	c = { name = "default:chest", param2 = 1 },
 	f = { name = "stairs:slab_wood" },
 	F = { name = "flowers:tulip" },
 	n = { name = "default:fence_acacia_wood" },
 	g = { name = "doors:gate_acacia_wood_closed" },
-	d = { name = "doors:door_glass_a", rotate = 3 },
-	D = { name = "doors:door_glass_a", rotate = 1 },
+	d = { name = "doors:door_glass_a", param2 = 3 },
+	D = { name = "doors:door_glass_a", param2 = 1 },
 	r = { name = "default:dirt" },
 	["~"] = { name = "default:water_source" },
 }
@@ -921,7 +921,7 @@ s s s s s s s s s s s s s s s s s s s s s s s s s s s s s s s
 
 	local main = [[
 s s s s s s s s s s s s s s . . . s s s s s s s s s s s s s s
-s . . . . . . . . . . . . T . . . T . . . . . . . . . . . . s
+s . . . . . . . . . . . . t . . . t . . . . . . . . . . . . s
 s . . . . . . . . . . . . . . . . . . . . . . . . . . . . . s
 s . . . . . . . . . . . . . . . . . . . . . . . . . . . . . s
 s . . . . . . . . . . . . . . . . . . . . . . . . . . . . . s
@@ -933,9 +933,9 @@ s . . . . . . . . . . . . . . . . . . . . . . . . . . . . . s
 s . . . . . . . . . . . . . . . . . . . . . . . . . . . . . s
 s . . . . . . . . . . . . . . . . . . . . . . . . . . . . . s
 s . . . . . . . . . . . . . . . . . . . . . . . . . . . . . s
-s . . . . . . . . . . . . . t . t . . . . . . . . . . . . . s
+s . . . . . . . . . . . . . T . T . . . . . . . . . . . . . s
 . . . . . . . . . . . . . . s s s . . . . . . . . . . . . . .
-. . . . . . . . . . . . . . T L T . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . t L t . . . . . . . . . . . . . .
 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 s . . . . . . . . . . . . . . . . . . . . . . . . . . . . . s
 s . . . . . . . . . . . . . . . . . . . . . . . . . . . . . s
@@ -949,7 +949,7 @@ s . . . . . . . . . . . . . . . . . . . . . . . . . . . . . s
 s . . . . . . . . . . . . . . . . . . . . . . . . . . . . . s
 s . . . . . . . . . . . . . . . . . . . . . . . . . . . . . s
 s . . . . . . . . . . . . . . . . . . . . . . . . . . . . . s
-s . . . . . . . . . . . . t . . . t . . . . . . . . . . . . s
+s . . . . . . . . . . . . T . . . T . . . . . . . . . . . . s
 s s s s s s s s s s s s s s . . . s s s s s s s s s s s s s s
 ]]
 	local ceiling = [[
@@ -991,14 +991,8 @@ s s s s s s s s s s s s s s s s s s s s s s s s s s s s s s s
 		table.insert(layers, main)
 	end
 	table.insert(layers, ceiling)
-	table.insert(layers, ceiling)
-	for _ = 1, diff do
-		table.insert(layers, main)
-	end
-	table.insert(layers, floor)
 	return layers
 end
-
 local function make_bp_tower()
 	local bp = {
 		[[
@@ -1176,9 +1170,7 @@ w w w w w w w w w
 	return bp
 end
 
-local top_bps = table.copy(room_bps)
-
-table.insert(top_bps, make_bp_tower())
+table.insert(room_bps, make_bp_tower())
 
 minetest.register_chatcommand("ct", {
 	description = "...",
@@ -1194,30 +1186,30 @@ minetest.register_chatcommand("ct", {
 			pre_clear = false,
 			build_order = "instant",
 			degradation = 0.1,
+			-- degradation_block = "default:goldblock",
 			degradation_block = "default:mossycobble",
 		}
 		local callback = function(build_record)
 			core.log("callback now!")
 		end
-		local ascent_placed = false
+		local descent_coord = { x = -1, z = -1 }
 		for i = 1, dungeon_layers do
 			for ii = 1, dungeon_size do
 				for iii = 1, dungeon_size do
-					opt.rotate = math.random(0, 3)
-					-- opt.rotate = 3
-					core.log("rotation: " .. opt.rotate)
+					-- opt.rotate = math.random(0, 3)
 					local bp = room_bps[math.random(1, #room_bps)]
-					if i == 1 then
-						bp = top_bps[math.random(1, #top_bps)]
-					end
 					-- Try to place a descent room at a random tile
-					if i > 1 and not ascent_placed and math.random() > 0.6 then
-						ascent_placed = true
-						bp = make_room_ascent()
+					if i == 1 and descent_coord.x == -1 and math.random() > 0.6 then
+						descent_coord = { x = ii, z = iii }
+						bp = make_room_descent()
 					end
 					-- Always place a descent room at the last tile
-					if i > 1 and not ascent_placed and ii == dungeon_size and iii == dungeon_size then
-						ascent_placed = true
+					if i == 1 and descent_coord.x == -1 and ii == dungeon_size and iii == dungeon_size then
+						descent_coord = { x = ii, z = iii }
+						bp = make_room_descent()
+					end
+					-- Handle ascent room
+					if i == 2 and ii == descent_coord.x and iii == descent_coord.z then
 						bp = make_room_ascent()
 					end
 					Rkit_structures.contruction(pos, bom_dungeon, bp, callback, opt)
@@ -1226,26 +1218,8 @@ minetest.register_chatcommand("ct", {
 				pos.z = pos.z + room_size
 				pos.x = pos.x - room_size * dungeon_size
 			end
-
-			ascent_placed = false
-			pos.x = origin.x
-			pos.z = origin.z
+			pos = vector.new(origin)
 			pos.y = pos.y - room_height - 2
-		end
-	end,
-})
-
-minetest.register_chatcommand("ctx", {
-	description = "...",
-	func = function(name, param)
-		local pos = minetest.get_player_by_name(name):get_pos()
-		for i = 1, 16 do
-			core.set_node(pos, { name = "doors:door_glass_a", param2 = i - 1 })
-			pos.z = pos.z - 1
-			core.set_node(pos, { name = "default:torch_wall", param2 = i - 1 })
-			pos.z = pos.z - 1
-			core.set_node(pos, { name = "default:ladder_steel", param2 = i - 1 })
-			pos.z = pos.z - 1
 		end
 	end,
 })

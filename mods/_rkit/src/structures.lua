@@ -88,6 +88,22 @@ function Rkit_structures.auto_room(main_layers, width, length, height, opt)
 	return bp
 end
 
+-- https://api.luanti.org/nodes/#node-paramtypes
+function Rkit_structures.rotate_to_wallmounted(rotate)
+	rotate = rotate % 4
+	-- local rot_map = { 4, 2, 5, 3 }
+	local rot_map = { 5, 3, 4, 2 }
+	local out = rot_map[rotate + 1]
+	return out
+end
+
+function Rkit_structures.rotate_to_facedir(rotate)
+	rotate = rotate % 4
+	-- No rot map, maps directly
+	local out = rotate
+	return out
+end
+
 function Rkit_structures.contruction(origin, bom, bp, callback, opt)
 	if opt.speed == nil then
 		opt.speed = 1
@@ -179,6 +195,8 @@ function Rkit_structures.contruction(origin, bom, bp, callback, opt)
 
 	-- Construction loop
 	for y, layer in ipairs(bp) do
+		-- Always rotate once to align with expected north
+		layer = rotate_construction_layer(layer)
 		for _ = 1, opt.rotate do
 			layer = rotate_construction_layer(layer)
 		end
@@ -189,7 +207,7 @@ function Rkit_structures.contruction(origin, bom, bp, callback, opt)
 			local length = #split_vals
 			local layer_area = width * length
 			for z, value in ipairs(split_vals) do
-				local block = bom[value] or default_block
+				local block = table.copy(bom[value]) or table.copy(default_block)
 
 				-- Handle degradation
 				-- Degradation increases with height
@@ -201,9 +219,18 @@ function Rkit_structures.contruction(origin, bom, bp, callback, opt)
 					end
 				end
 
-				if block.param2 then
-					block.param2 = (block.param2 + opt.rotate) % 4
+				-- Handle rotation
+				if block.rotate then
+					local meta = core.registered_nodes[block.name]
+					if meta.paramtype2 == "wallmounted" then
+						-- block.param2 = 2 + ((block.rotate - 2) + opt.rotate) % 4
+						block.param2 = Rkit_structures.rotate_to_wallmounted(block.rotate + opt.rotate)
+					else -- facedir
+						-- block.param2 = (block.rotate + opt.rotate) % 4
+						block.param2 = Rkit_structures.rotate_to_facedir(block.rotate + opt.rotate)
+					end
 				end
+
 				local b_pos = { x = origin.x + x, y = origin.y + y, z = origin.z + z }
 				local current_node = core.get_node(b_pos)
 				if not opt.force_build and current_node.name ~= "air" then
