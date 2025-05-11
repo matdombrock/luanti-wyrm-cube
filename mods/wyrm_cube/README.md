@@ -1,6 +1,6 @@
 # Wyrm Cube
 
-A Luanti (Minetest) subgame inspired by Dragon Ball.
+A Luanti subgame inspired by Dragon Ball.
 
 This subgame places 7 Wyrm Cubes into the world and sends you out to find them using an assortment of high tech tools.
 
