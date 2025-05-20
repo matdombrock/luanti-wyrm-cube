@@ -19,3 +19,5 @@ This is a sandbox *exploration* game that puts you right into the action. The fo
 - Semi-secret end game content
 
 See the [GUIDE](https://github.com/matdombrock/luanti-wyrm-cube/blob/main/GUIDE.md) for more information on gameplay details.
+
+See the [MODS FILE](https://github.com/matdombrock/luanti-wyrm-cube/blob/main/MODS.md) for more information on gameplay details.

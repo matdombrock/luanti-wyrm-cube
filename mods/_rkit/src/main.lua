@@ -47,7 +47,7 @@ function Rkit:string_includes(str, substring)
 	return string.find(str, substring, 1, true) ~= nil
 end
 
-function array_reverse(array)
+function Rkit:array_reverse(array)
 	local reversed = {}
 	for i = #array, 1, -1 do
 		table.insert(reversed, array[i])

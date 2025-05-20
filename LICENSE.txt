@@ -1,4 +1,6 @@
-
+License of original code/media GPL3
+See each mods respective license/readme file for more information/attribution
+________________________________________________________________________
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
