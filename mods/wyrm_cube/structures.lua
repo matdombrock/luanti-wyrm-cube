@@ -22,6 +22,87 @@ Structures.simple_bom = {
 	D = { name = "doors:door_glass_a", rotate = 3 },
 	r = { name = "default:dirt" },
 }
+Structures.yurt_bom = {
+	["."] = { name = "air" },
+	a = { name = "air" },
+	s = { name = "default:stone" },
+	l = { name = "wool:white" },
+	L = { name = "default:ladder_steel", rotate = 2 },
+	w = { name = "default:wood" },
+	W = { name = "default:acacia_wood" },
+	o = { name = "default:glass" },
+	t = { name = "default:torch_wall", rotate = 0 },
+	T = { name = "default:torch_wall", rotate = 2 },
+	b = { name = "beds:bed_bottom", rotate = 2 },
+	B = { name = "beds:bed_top", rotate = 2 },
+	h = { name = "default:bookshelf", rotate = 3 },
+	c = { name = "default:chest", rotate = 0 },
+	f = { name = "stairs:slab_wood" },
+	F = { name = "flowers:tulip" },
+	n = { name = "default:fence_acacia_wood" },
+	g = { name = "doors:gate_acacia_wood_closed", rotate = 1 },
+	d = { name = "doors:door_glass_a", rotate = 2 },
+	D = { name = "doors:door_glass_a", rotate = 3 },
+	r = { name = "default:dirt" },
+	p = { name = "wyrm_cube:lamp_small", rotate = 0 },
+	x = { name = "wyrm_cube:transmuter", rotate = 0 },
+}
+Structures.yurt = {
+	[[
+W W W W W W W W W
+W W W W W W W W W
+W W W W W W W W W
+W W W W W W W W W
+W W W W W W W W W
+W W W W W W W W W
+W W W W W W W W W
+]],
+	[[
+W l l l l l l l W
+l c a a x a a a l
+l a a a a a a a l
+l b a a a a a a l
+l B a a a a a a l
+W l l l d l l l W
+a p a a a a a p a
+]],
+	[[
+W l o o l o o l W
+l a a a a a a a l
+o a a a a a a a o
+o a a a a a a a o
+l a a a a a a a l
+W l o l a l o l W
+a a a a a a a a a
+]],
+	[[
+W l l l l l l l W
+l a a a a a a a l
+l a a a a a a a l
+l a a a a a a a l
+l a a a a a a a l
+W l l l l l l l W
+a a a a a a a a a
+]],
+	[[
+W l l l l l l l W
+l a a a a a a a l
+l a a a a a a a l
+l a a a a a a a l
+l a a a a a a a l
+W l l l l l l l W
+a a a p a p a a a
+]],
+	[[
+a W W W W W W W a
+W l l l l l l l W
+W l l l l l l l W
+W l l l l l l l W
+W l l l l l l l W
+a W W W W W W W a
+a a a a a a a a a
+]],
+}
 Structures.house_a = {
 	[[
 W s s s s s s s W

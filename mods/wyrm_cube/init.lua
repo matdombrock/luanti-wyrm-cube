@@ -283,6 +283,7 @@ local supply_drop_items = {
 	{ 20, "wyrm_cube:meta_scanner 1" },
 	{ 20, "wyrm_cube:meta_vacuum 1" },
 	{ 20, "wyrm_cube:capsule_yurt 8" },
+	{ 5, "wyrm_cube:capsule_house 2" },
 	{ 3, "wyrm_cube:capsule_airport 2" },
 	{ 5, "wyrm_cube:capsule_watchtower 8" },
 	{ 1, "wyrm_cube:capsule_megatower 1" },
@@ -1980,6 +1981,9 @@ core.register_craftitem("wyrm_cube:supply_dropper", {
 	end,
 })
 
+--
+-- Structure capsules
+--
 local function register_structure_capsule(name, description, color, width, length, fn_effect)
 	core.register_craftitem(name, {
 		description = description,
@@ -2041,6 +2045,9 @@ local function register_structure_capsule(name, description, color, width, lengt
 				itemstack:take_item(1)
 				return itemstack
 			end
+			if pointed_thing.under == nil then
+				return itemstack
+			end
 			rk:hud_msg(user, def.description .. " primed", 2)
 			meta:set_int("_primed", 1)
 			meta:set_string("inventory_image", "capsule_open.png")
@@ -2078,6 +2085,21 @@ end
 register_structure_capsule(
 	"wyrm_cube:capsule_yurt",
 	"Yurt Capsule",
+	"#ffffffff",
+	7,
+	7,
+	function(itemstack, user, pointed_thing)
+		local meta = itemstack:get_meta()
+		local origin = core.string_to_pos(meta:get_string("scaffold_pos_a"))
+		origin.y = origin.y - 2
+		local opt = { rotate = 0, speed = 5 }
+		Rkit_structures.contruction(origin, Structures.yurt_bom, Structures.yurt, nil, opt)
+	end
+)
+
+register_structure_capsule(
+	"wyrm_cube:capsule_house",
+	"House Capsule",
 	"#ffffffff",
 	7,
 	7,
