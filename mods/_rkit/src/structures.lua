@@ -9,7 +9,49 @@ core.register_node("_rkit:scaffold", {
 	drawtype = "glasslike", -- Allows transparency and gives a glass-like appearance
 })
 
+core.register_node("_rkit:scaffold_solid", {
+	description = "Scaffolding",
+	tiles = { "scaffold-solid.png" },
+	is_ground_content = false,
+	light_source = 14,
+	paramtype = "light",
+	sunlight_propagates = true,
+	glow = 10,
+	drawtype = "glasslike", -- Allows transparency and gives a glass-like appearance
+})
+
+core.register_node("_rkit:scaffold_solid_corner", {
+	description = "Scaffolding",
+	tiles = { "scaffold-solid-corner.png" },
+	is_ground_content = false,
+	light_source = 14,
+	paramtype = "light",
+	sunlight_propagates = true,
+	glow = 10,
+	drawtype = "glasslike", -- Allows transparency and gives a glass-like appearance
+})
+
 Rkit_structures = {}
+
+function Rkit_structures.get_dimensions(bp)
+	local max = { x = 0, y = 0, z = 0 }
+	for y, layer in ipairs(bp) do
+		max.y = y
+		local split_rows = Rkit:string_split(layer, "\n")
+		local width = #split_rows
+		if width > max.x then
+			max.x = width
+		end
+		for x, row in ipairs(split_rows) do
+			local split_vals = Rkit:string_split(row)
+			local length = #split_vals
+			if length > max.z then
+				max.z = length
+			end
+		end
+	end
+	return max
+end
 
 function Rkit_structures.auto_room(main_layers, width, length, height, opt)
 	if opt.floor_str == nil then
@@ -106,7 +148,7 @@ end
 
 function Rkit_structures.contruction(origin, bom, bp, callback, opt)
 	if opt.speed == nil then
-		opt.speed = 1
+		opt.speed = 5
 	end
 	if opt.force_build == nil then
 		opt.force_build = true
@@ -225,9 +267,16 @@ function Rkit_structures.contruction(origin, bom, bp, callback, opt)
 					if meta.paramtype2 == "wallmounted" then
 						-- block.param2 = 2 + ((block.rotate - 2) + opt.rotate) % 4
 						block.param2 = Rkit_structures.rotate_to_wallmounted(block.rotate + opt.rotate)
-					else -- facedir
+					elseif meta.paramtype2 == "facedir" then
 						-- block.param2 = (block.rotate + opt.rotate) % 4
 						block.param2 = Rkit_structures.rotate_to_facedir(block.rotate + opt.rotate)
+					else
+						core.log(
+							"Warning: Block "
+								.. block.name
+								.. " has no rotation support, using param2: "
+								.. block.param2
+						)
 					end
 				end
 

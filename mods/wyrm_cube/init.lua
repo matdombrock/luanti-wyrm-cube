@@ -122,7 +122,7 @@ local move_speeds = {
 	moon = { speed = 1, jump = 1, sneak = 1, fall = 1, gravity = 0.1654 },
 	mars = { speed = 1, jump = 1, sneak = 1, fall = 1, gravity = 0.38 },
 	low_orbit = { speed = 1, jump = 1, sneak = 1, fall = 1, gravity = 0.01 },
-	rabbit = { speed = 1, jump = 3, sneak = 1, fall = 1, gravity = 1 },
+	rabbit = { speed = 1, jump = 3, sneak = 1, fall = 0.5, gravity = 1 },
 }
 -- TODO: This loop is sus
 local function set_move(player, move)
@@ -270,7 +270,7 @@ local supply_drop_items = {
 	{ 1, "wyrm_cube:potion_immunity_3 2" },
 	{ 3, "wyrm_cube:potion_cat 4" },
 	{ 2, "wyrm_cube:potion_feather 2" },
-	{ 2, "wyrm_cube:potion_bird 2" },
+	-- { 2, "wyrm_cube:potion_bird 2" },
 	{ 10, "wyrm_cube:potion_health_1 8" },
 	{ 7, "wyrm_cube:potion_health_2 4" },
 	{ 4, "wyrm_cube:potion_health_3 1" },
@@ -400,21 +400,22 @@ local function supply_drops(user, num)
 end
 
 -- TODO: This code is pretty messy
-local function spawn_yurt(name, param)
-	local player = core.get_player_by_name(name)
-	if not player then
-		return false, "Player not found!"
-	end
+local function spawn_yurt(pos, param)
+	-- local player = core.get_player_by_name(name)
+	-- if not player then
+	-- 	return false, "Player not found!"
+	-- end
 
 	-- Dimensions of the house
 	local width = 7
 	local height = 4
 	local length = 7
 
-	local corner_stone = player:get_pos()
+	pos = vector.new(pos)
+	local corner_stone = pos
 	corner_stone.y = corner_stone.y - 1
-	corner_stone.x = corner_stone.x - math.floor(width / 2)
-	corner_stone.z = corner_stone.z - math.floor(length / 2)
+	-- corner_stone.x = corner_stone.x - math.floor(width / 2)
+	-- corner_stone.z = corner_stone.z - math.floor(length / 2)
 
 	-- place the corner stone
 	core.set_node(corner_stone, { name = "default:wood" })
@@ -557,15 +558,15 @@ local function spawn_yurt(name, param)
 	return true, "House created with the corner stone as the starting point!"
 end
 
-local function spawn_landing_strip(name)
+local function spawn_landing_strip(pos)
 	local length = 32
 	local width = 5
-	local player = core.get_player_by_name(name)
-	if not player then
-		return false, "Player not found!"
-	end
-	local player_pos = player:get_pos()
-	local pos = player_pos
+	-- local player = core.get_player_by_name(name)
+	-- if not player then
+	-- return false, "Player not found!"
+	-- end
+	-- local player_pos = player:get_pos()
+	-- local pos = player_pos
 	pos.y = pos.y - 1
 	for x = -length, length do
 		for z = -width, width do
@@ -623,12 +624,12 @@ local function spawn_landing_strip(name)
 	spawn_particles(pos)
 end
 
-local function spawn_watchtower(name)
-	local player = core.get_player_by_name(name)
-	if not player then
-		return false, "Player not found!"
-	end
-	local pos = player:get_pos()
+local function spawn_watchtower(pos)
+	-- local player = core.get_player_by_name(name)
+	-- if not player then
+	-- 	return false, "Player not found!"
+	-- end
+	-- local pos = player:get_pos()
 	pos.y = pos.y - 1
 	local pos_c = vector.new(pos) -- cache
 	local height_c = 32
@@ -762,16 +763,16 @@ local function spawn_watchtower(name)
 	pos.y = pos.y + height + 2
 	pos.x = pos.x + width_c / 2
 	pos.z = pos.z + width_c / 2
-	player:set_pos(pos)
+	-- player:set_pos(pos)
 	spawn_particles(pos)
 end
 -- TODO: Not DRY. Basically a copy of watchtower
-local function spawn_megatower(name)
-	local player = core.get_player_by_name(name)
-	if not player then
-		return false, "Player not found!"
-	end
-	local pos = player:get_pos()
+local function spawn_megatower(pos)
+	-- local player = core.get_player_by_name(name)
+	-- if not player then
+	-- 	return false, "Player not found!"
+	-- end
+	-- local pos = player:get_pos()
 	pos.y = pos.y - 1
 	local pos_c = vector.new(pos) -- cache
 	local height_c = 256
@@ -905,7 +906,7 @@ local function spawn_megatower(name)
 	pos.y = pos.y + height + 2
 	pos.x = pos.x + width_c / 2
 	pos.z = pos.z + width_c / 2
-	player:set_pos(pos)
+	-- player:set_pos(pos)
 	spawn_particles(pos)
 end
 
@@ -1600,6 +1601,8 @@ local transmutation_rates = {
 	{ "mese_crystal", 0.2 },
 	-- Not allowed to transmute
 	{ "supply_dropper", 0 },
+	{ "mese_crystal_fragment", 0 },
+	{ "wyrm_cube:tech_chip", 0 },
 }
 
 local function calculate_transmute_rate(meta, stack)
@@ -1975,65 +1978,148 @@ core.register_craftitem("wyrm_cube:supply_dropper", {
 	end,
 })
 
-core.register_craftitem("wyrm_cube:capsule_airport", {
-	description = "Airport Capsule",
-	inventory_image = "capsule_yellow.png",
-	stack_max = 99,
-	light_source = 14,
-	paramtype = "light",
-	sunlight_propagates = true,
-	glow = 10,
-	on_use = function(itemstack, user, pointed_thing)
-		spawn_landing_strip(user:get_player_name())
-		itemstack:take_item(1)
-		return itemstack
-	end,
-})
+local function register_structure_capsule(name, description, color, width, length, fn_effect)
+	core.register_craftitem(name, {
+		description = description,
+		inventory_image = "capsule.png",
+		stack_max = 99,
+		light_source = 14,
+		paramtype = "light",
+		sunlight_propagates = true,
+		glow = 10,
+		color = color,
+		_width = width,
+		_length = length,
+		_fn_effect = fn_effect,
+		_fn_deprime = function(itemstack, user, pointed_thing, alert)
+			local meta = itemstack:get_meta()
+			local def = core.registered_items[name]
+			if alert then
+				rk:hud_msg(user, def.description .. " de-primed", 2)
+			end
+			meta:set_string("inventory_image", "capsule.png")
+			meta:set_int("_primed", 0)
+			local scaffold_pos_str_a = meta:get_string("scaffold_pos_a")
+			local scaffold_pos_str_b = meta:get_string("scaffold_pos_b")
+			local scaffold_pos_str_c = meta:get_string("scaffold_pos_c")
+			local scaffold_pos_str_d = meta:get_string("scaffold_pos_d")
+			local scaffold_pos_a = { x = 0, y = 0, z = 0 }
+			local scaffold_pos_b = { x = 0, y = 0, z = 0 }
+			local scaffold_pos_c = { x = 0, y = 0, z = 0 }
+			local scaffold_pos_d = { x = 0, y = 0, z = 0 }
+			if scaffold_pos_str_a ~= "" then
+				scaffold_pos_a = core.string_to_pos(scaffold_pos_str_a)
+			end
+			if scaffold_pos_str_b ~= "" then
+				scaffold_pos_b = core.string_to_pos(scaffold_pos_str_b)
+			end
+			if scaffold_pos_str_c ~= "" then
+				scaffold_pos_c = core.string_to_pos(scaffold_pos_str_c)
+			end
+			if scaffold_pos_str_d ~= "" then
+				scaffold_pos_d = core.string_to_pos(scaffold_pos_str_d)
+			end
+			local scaffold_old_a = meta:get_string("scaffold_old_a")
+			local scaffold_old_b = meta:get_string("scaffold_old_b")
+			local scaffold_old_c = meta:get_string("scaffold_old_c")
+			local scaffold_old_d = meta:get_string("scaffold_old_d")
+			core.set_node(scaffold_pos_a, { name = scaffold_old_a })
+			core.set_node(scaffold_pos_b, { name = scaffold_old_b })
+			core.set_node(scaffold_pos_c, { name = scaffold_old_c })
+			core.set_node(scaffold_pos_d, { name = scaffold_old_d })
+			return itemstack
+		end,
+		on_use = function(itemstack, user, pointed_thing)
+			local meta = itemstack:get_meta()
+			local def = core.registered_items[name]
+			local primed = meta:get_int("_primed") or 0
+			if primed == 1 then
+				def._fn_deprime(itemstack, user, pointed_thing, false)
+				def._fn_effect(itemstack, user, pointed_thing)
+				itemstack:take_item(1)
+				return itemstack
+			end
+			rk:hud_msg(user, def.description .. " primed", 2)
+			meta:set_int("_primed", 1)
+			meta:set_string("inventory_image", "capsule_open.png")
+			local pointed_pos_a = vector.add(pointed_thing.under, vector.new(0, 1, 0))
+			local pointed_pos_b = vector.add(pointed_pos_a, vector.new(0, 0, def._length))
+			local pointed_pos_c = vector.add(pointed_pos_a, vector.new(def._width, 0, 0))
+			local pointed_pos_d = vector.add(pointed_pos_a, vector.new(def._width, 0, def._length))
+			local pointed_name_a = core.get_node(pointed_pos_a).name
+			local pointed_name_b = core.get_node(pointed_pos_b).name
+			local pointed_name_c = core.get_node(pointed_pos_c).name
+			local pointed_name_d = core.get_node(pointed_pos_d).name
+			core.set_node(pointed_pos_a, { name = "_rkit:scaffold_solid_corner" })
+			core.set_node(pointed_pos_b, { name = "_rkit:scaffold_solid" })
+			core.set_node(pointed_pos_c, { name = "_rkit:scaffold_solid" })
+			core.set_node(pointed_pos_d, { name = "_rkit:scaffold_solid" })
+			meta:set_string("scaffold_pos_a", core.pos_to_string(pointed_pos_a))
+			meta:set_string("scaffold_pos_b", core.pos_to_string(pointed_pos_b))
+			meta:set_string("scaffold_pos_c", core.pos_to_string(pointed_pos_c))
+			meta:set_string("scaffold_pos_d", core.pos_to_string(pointed_pos_d))
+			meta:set_string("scaffold_old_a", pointed_name_a)
+			meta:set_string("scaffold_old_b", pointed_name_b)
+			meta:set_string("scaffold_old_c", pointed_name_c)
+			meta:set_string("scaffold_old_d", pointed_name_d)
+			return itemstack
+		end,
+		on_place = function(itemstack, user, pointed_thing)
+			return core.registered_items[name]._fn_deprime(itemstack, user, pointed_thing, true)
+		end,
+		on_secondary_use = function(itemstack, user, pointed_thing)
+			return core.registered_items[name]._fn_deprime(itemstack, user, pointed_thing, true)
+		end,
+	})
+end
 
-core.register_craftitem("wyrm_cube:capsule_yurt", {
-	description = "Yurt Capsule",
-	inventory_image = "capsule_white.png",
-	stack_max = 99,
-	light_source = 14,
-	paramtype = "light",
-	sunlight_propagates = true,
-	glow = 10,
-	on_use = function(itemstack, user, pointed_thing)
-		spawn_yurt(user:get_player_name())
-		itemstack:take_item(1)
-		return itemstack
-	end,
-})
+register_structure_capsule(
+	"wyrm_cube:capsule_yurt",
+	"Yurt Capsule",
+	"#ffffffff",
+	7,
+	7,
+	function(itemstack, user, pointed_thing)
+		local meta = itemstack:get_meta()
+		spawn_yurt(core.string_to_pos(meta:get_string("scaffold_pos_a")))
+	end
+)
 
-core.register_craftitem("wyrm_cube:capsule_watchtower", {
-	description = "Watchtower Capsule",
-	inventory_image = "capsule_black.png",
-	stack_max = 99,
-	light_source = 14,
-	paramtype = "light",
-	sunlight_propagates = true,
-	glow = 10,
-	on_use = function(itemstack, user, pointed_thing)
-		spawn_watchtower(user:get_player_name())
-		itemstack:take_item(1)
-		return itemstack
-	end,
-})
+register_structure_capsule(
+	"wyrm_cube:capsule_airport",
+	"Airport Capsule",
+	"#ffff00ff",
+	7,
+	7,
+	function(itemstack, user, pointed_thing)
+		local meta = itemstack:get_meta()
+		spawn_landing_strip(core.string_to_pos(meta:get_string("scaffold_pos_a")))
+	end
+)
 
-core.register_craftitem("wyrm_cube:capsule_megatower", {
-	description = "Megatower Capsule",
-	inventory_image = "capsule_red.png",
-	stack_max = 99,
-	light_source = 14,
-	paramtype = "light",
-	sunlight_propagates = true,
-	glow = 10,
-	on_use = function(itemstack, user, pointed_thing)
-		spawn_megatower(user:get_player_name())
-		itemstack:take_item(1)
-		return itemstack
-	end,
-})
+register_structure_capsule(
+	"wyrm_cube:capsule_watchtower",
+	"Watchtower Capsule",
+	"#333333ff",
+	5,
+	5,
+	function(itemstack, user, pointed_thing)
+		local meta = itemstack:get_meta()
+		spawn_watchtower(core.string_to_pos(meta:get_string("scaffold_pos_a")))
+	end
+)
+
+register_structure_capsule(
+	"wyrm_cube:capsule_megatower",
+	"Megatower Capsule",
+	"#ff0000ff",
+	9,
+	9,
+	function(itemstack, user, pointed_thing)
+		local meta = itemstack:get_meta()
+		spawn_megatower(core.string_to_pos(meta:get_string("scaffold_pos_a")))
+	end
+)
 
 core.register_craftitem("wyrm_cube:wyrm_sigil", {
 	description = "Wyrm Sigil",
@@ -2258,7 +2344,7 @@ core.register_craftitem("wyrm_cube:potion_immunity_1", {
 	sunlight_propagates = true,
 	glow = 10,
 	on_use = function(itemstack, user, pointed_thing)
-		rk:no_dmg(user:get_player_name(), 6)
+		rk:no_dmg(user, 6)
 		warn_potion(user, "Immunity 1", 6)
 		core.after(6, function()
 			spawn_particles(user:get_pos())
@@ -2277,7 +2363,7 @@ core.register_craftitem("wyrm_cube:potion_immunity_2", {
 	sunlight_propagates = true,
 	glow = 10,
 	on_use = function(itemstack, user, pointed_thing)
-		rk:no_dmg(user:get_player_name(), 30)
+		rk:no_dmg(user, 30)
 		warn_potion(user, "Immunity 2", 30)
 		core.after(30, function()
 			spawn_particles(user:get_pos())
@@ -2296,7 +2382,7 @@ core.register_craftitem("wyrm_cube:potion_immunity_3", {
 	sunlight_propagates = true,
 	glow = 10,
 	on_use = function(itemstack, user, pointed_thing)
-		rk:no_dmg(user:get_player_name(), 120)
+		rk:no_dmg(user, 120)
 		warn_potion(user, "Immunity 3", 120)
 		core.after(120, function()
 			spawn_particles(user:get_pos())
@@ -2366,7 +2452,7 @@ core.register_craftitem("wyrm_cube:donut", {
 	glow = 10,
 	on_use = function(itemstack, user, pointed_thing)
 		user:set_hp(200)
-		rk:no_dmg(user:get_player_name(), 30)
+		rk:no_dmg(user, 30)
 		set_move(user:get_player_name(), move_speeds.doom)
 		warn_potion(user, "Donut", 30)
 		core.after(30, function()
@@ -2418,35 +2504,35 @@ core.register_craftitem("wyrm_cube:potion_feather", {
 		return itemstack
 	end,
 })
-core.register_craftitem("wyrm_cube:potion_bird", {
-	description = "Wyrm Potion: Bird",
-	inventory_image = "potion_white.png",
-	stack_max = 99,
-	light_source = 14,
-	paramtype = "light",
-	sunlight_propagates = true,
-	glow = 10,
-	on_use = function(itemstack, user, pointed_thing)
-		-- Grant flying permission
-		local player_name = user:get_player_name()
-		local privs = core.get_player_privs(player_name) -- Get the player's current privileges
-		privs.fly = true -- Add the 'fly' privilege
-		core.set_player_privs(player_name, privs)
-		core.chat_send_player(player_name, "You can now fly!")
-		warn_potion(user, "Bird", 120)
-		core.after(120, function()
-			-- Remove flying permission
-			privs.fly = nil -- Remove the 'fly' privilege
-			core.set_player_privs(player_name, privs)
-			spawn_particles(user:get_pos())
-		end)
-		spawn_particles(user:get_pos())
-		-- Remove one item from the stack
-		itemstack:take_item(1)
-		-- Return the updated itemstack
-		return itemstack
-	end,
-})
+-- core.register_craftitem("wyrm_cube:potion_bird", {
+-- 	description = "Wyrm Potion: Bird",
+-- 	inventory_image = "potion_white.png",
+-- 	stack_max = 99,
+-- 	light_source = 14,
+-- 	paramtype = "light",
+-- 	sunlight_propagates = true,
+-- 	glow = 10,
+-- 	on_use = function(itemstack, user, pointed_thing)
+-- 		-- Grant flying permission
+-- 		local player_name = user:get_player_name()
+-- 		local privs = core.get_player_privs(player_name) -- Get the player's current privileges
+-- 		privs.fly = true -- Add the 'fly' privilege
+-- 		core.set_player_privs(player_name, privs)
+-- 		core.chat_send_player(player_name, "You can now fly!")
+-- 		warn_potion(user, "Bird", 120)
+-- 		core.after(120, function()
+-- 			-- Remove flying permission
+-- 			privs.fly = nil -- Remove the 'fly' privilege
+-- 			core.set_player_privs(player_name, privs)
+-- 			spawn_particles(user:get_pos())
+-- 		end)
+-- 		spawn_particles(user:get_pos())
+-- 		-- Remove one item from the stack
+-- 		itemstack:take_item(1)
+-- 		-- Return the updated itemstack
+-- 		return itemstack
+-- 	end,
+-- })
 
 core.register_tool("wyrm_cube:wyrm_guide", {
 	description = "Cube Hunter's Guide",
@@ -2769,28 +2855,28 @@ end)
 --
 -- HP CHANGE HANDLER
 --
-
-core.register_on_player_hpchange(function(player, hp_change, reason)
-	local player_name = player:get_player_name()
-	local mult = mod_storage:get_float(player_name .. "_rk:fall_dmg_mult") or 1
-	if mult == 0 then
-		player:set_physics_override({
-			fall_damage = false, -- Disables fall damage completely
-		})
-		log(player:get_player_name() .. " fall damage disabled")
-	else
-		player:set_physics_override({
-			fall_damage = true,
-		})
-		log(player:get_player_name() .. " fall damage enabled")
-	end
-	if reason.type == "fall" then
-		-- Check if the player has a specific privilege
-		log("Fall Damage Mult: " .. mult)
-		return hp_change * mult -- Apply fall damage multiplier
-	end
-	return hp_change -- Allow other types of damage
-end, true)
+-- NOTE: NOW HANDLED BY RKIT
+-- core.register_on_player_hpchange(function(player, hp_change, reason)
+-- 	local player_name = player:get_player_name()
+-- 	local mult = mod_storage:get_float(player_name .. "_rk:fall_dmg_mult") or 1
+-- 	if mult == 0 then
+-- 		player:set_physics_override({
+-- 			fall_damage = false, -- Disables fall damage completely
+-- 		})
+-- 		log(player:get_player_name() .. " fall damage disabled")
+-- 	else
+-- 		player:set_physics_override({
+-- 			fall_damage = true,
+-- 		})
+-- 		log(player:get_player_name() .. " fall damage enabled")
+-- 	end
+-- 	if reason.type == "fall" then
+-- 		-- Check if the player has a specific privilege
+-- 		log("Fall Damage Mult: " .. mult)
+-- 		return hp_change * mult -- Apply fall damage multiplier
+-- 	end
+-- 	return hp_change -- Allow other types of damage
+-- end, true)
 
 --
 -- SHUTDOWN HANDLER

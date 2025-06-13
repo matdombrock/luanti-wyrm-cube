@@ -14,3 +14,12 @@ core.register_on_player_hpchange(function(player, hp_change, reason)
 	end
 	return hp_change -- Allow other types of damage
 end, true)
+
+-- Register a handler that runs when players join
+core.register_on_joinplayer(function(player)
+	rk:log("Player joined: " .. player:get_player_name())
+	-- Initialize player state if it doesn't exist
+	if not Rkit.player_state[player:get_player_name()] then
+		Rkit.player_state[player:get_player_name()] = { fall_damage = 1 }
+	end
+end)

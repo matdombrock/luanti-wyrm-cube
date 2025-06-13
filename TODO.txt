@@ -1,10 +1,12 @@
 WISHLIST:
+- Transmutation overhaul
+- Decrease transmute rates
+- Structure spawning overhaul
 - Wyrm Cubes can spawn underwater
 - Wyrm Cubes can spawn under ground (in caves)
 - Tech Printer Computer
 - Custom Bosses
 - More Music
-- Decrease transmute rates
 - Everyone should TP up at end
 
 KNOWN ISSUES:
