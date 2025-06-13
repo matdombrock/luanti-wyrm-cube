@@ -1,4 +1,6 @@
 -- Wyrm Cubes Mod for Luanti
+local modpath = core.get_modpath(core.get_current_modname())
+dofile(modpath .. "/structures.lua")
 local rk = Rkit:new("wyrm_cube")
 
 local modpath = core.get_modpath(core.get_current_modname())
@@ -2081,7 +2083,10 @@ register_structure_capsule(
 	7,
 	function(itemstack, user, pointed_thing)
 		local meta = itemstack:get_meta()
-		spawn_yurt(core.string_to_pos(meta:get_string("scaffold_pos_a")))
+		local origin = core.string_to_pos(meta:get_string("scaffold_pos_a"))
+		origin.y = origin.y - 8
+		local opt = { rotate = 0, speed = 5 }
+		Rkit_structures.contruction(origin, Structures.simple_bom, Structures.house_a, nil, opt)
 	end
 )
 
