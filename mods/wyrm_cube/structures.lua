@@ -204,3 +204,157 @@ w w w w w a a a a
 f f f f f a a a a
 ]],
 }
+
+Structures.make_bp_tower = function(section_height)
+	section_height = section_height or 8
+	local bp = {
+		[[
+s s s s s s s s s
+s s s s s s s s s
+s s s s s s s s s
+s s s s s s s s s
+s s s s s s s s s
+s s s s s s s s s
+s s s s s s s s s
+s s s s s s s s s
+s s s s s s s s s
+]],
+	}
+	table.insert(
+		bp,
+		[[
+. . . . . . . . .
+. . . . . . . . .
+. . W s s s W . .
+. . s . L . s . .
+. . s . . . s . .
+. . s . . . s . .
+. . W s d s W . .
+. . . . . . . . .
+. . . . . . . . .
+]]
+	)
+	table.insert(
+		bp,
+		[[
+. . . . . . . . .
+. . . . . . . . .
+. . W s s s W . .
+. . s . L . s . .
+. . s . . . s . .
+. . s . . . s . .
+. . W s a s W . .
+. . . . . . . . .
+. . . . . . . . .
+]]
+	)
+	local section1a = [[
+. . . . . . . . .
+. . . . . . . . .
+. . W s s s W . .
+. . s . L . s . .
+. . s . . . s . .
+. . s . . . s . .
+. . W s s s W . .
+. . . . . . . . .
+. . . . . . . . .
+]]
+	local section1b = [[
+. . . . . . . . .
+. . . . . . . . .
+. . W s s s W . .
+. . s T L T s . .
+. . o . . . o . .
+. . s . . . s . .
+. . W s o s W . .
+. . . . . . . . .
+. . . . . . . . .
+]]
+	local section2a = [[
+. . . . . . . . .
+. W s s s s s W .
+. s W s s s W s .
+. s s . L . s s .
+. s s . . . s s .
+. s s . . . s s .
+. s W s s s W s .
+. W s s s s s W .
+. . . . . . . . .
+]]
+	local section2b = [[
+. . . . . . . . .
+. W s s s s s W .
+. s W s s s W s .
+. s s T L T s s .
+. o . . . . . o .
+. s s . . . s s .
+. s W s . s W s .
+. W s s o s s W .
+. . . . . . . . .
+]]
+	local section3a = [[
+W s s s s s s s W
+s W s s s s s W s
+s s W s s s W s s
+s s s . L . s s s
+s s s . . . s s s
+s s s . . . s s s
+s s W s s s W s s
+s W s s s s s W s
+W s s s s s s s W
+]]
+	local section3b = [[
+W s s s s s s s W
+s W s s s s s W s
+s s W s s s W s s
+s s s T L T s s s
+o . . . . . . . o
+s s s . . . s s s
+s s W s . s W s s
+s W s s . s s W s
+W s s s o s s s W
+]]
+	for _ = 1, section_height do
+		table.insert(bp, section1a)
+		table.insert(bp, section1b)
+	end
+	for _ = 1, section_height do
+		table.insert(bp, section2a)
+		table.insert(bp, section2b)
+	end
+	for _ = 1, section_height do
+		table.insert(bp, section3a)
+		table.insert(bp, section3b)
+	end
+
+	table.insert(
+		bp,
+		[[
+W W s s s s s W W
+W s s s s s s s W
+s s s s s s s s s
+s s s s L s s s s
+s s s s s s s s s
+s s s s s s s s s
+s s s s s s s s s
+W s s s s s s s W
+W W s s s s s W W
+]]
+	)
+	table.insert(
+		bp,
+		[[
+w w w w w w w w w
+w . T . . . T . w
+w . . . s . . . w
+w . . . L . . . w
+w . . . . . . . w
+w . . . . . . . w
+w . . . . . . . w
+w . t c . c t . w
+w w w w w w w w w
+]]
+	)
+
+	return bp
+end
