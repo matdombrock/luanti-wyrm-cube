@@ -3,22 +3,22 @@ local simple_bom = {
 	a = { name = "air" },
 	s = { name = "default:stone" },
 	l = { name = "wool:white" },
-	L = { name = "default:ladder_steel", param2 = 3 },
+	L = { name = "default:ladder_steel", rotate = 2 },
 	w = { name = "default:wood" },
 	W = { name = "default:acacia_wood" },
 	o = { name = "default:glass" },
-	t = { name = "default:torch_wall", param2 = 2 },
-	T = { name = "default:torch_wall", param2 = 3 },
-	b = { name = "beds:bed_bottom", param2 = 1 },
-	B = { name = "beds:bed_top", param2 = 1 },
-	h = { name = "default:bookshelf", param2 = 1 },
-	c = { name = "default:chest", param2 = 1 },
+	t = { name = "default:torch_wall", rotate = 0 },
+	T = { name = "default:torch_wall", rotate = 2 },
+	b = { name = "beds:bed_bottom", rotate = 2 },
+	B = { name = "beds:bed_top", rotate = 2 },
+	h = { name = "default:bookshelf", rotate = 3 },
+	c = { name = "default:chest", rotate = 2 },
 	f = { name = "stairs:slab_wood" },
 	F = { name = "flowers:tulip" },
 	n = { name = "default:fence_acacia_wood" },
 	g = { name = "doors:gate_acacia_wood_closed" },
-	d = { name = "doors:door_glass_a", param2 = 3 },
-	D = { name = "doors:door_glass_a", param2 = 1 },
+	d = { name = "doors:door_glass_a", rotate = 2 },
+	D = { name = "doors:door_glass_a", rotate = 3 },
 	r = { name = "default:dirt" },
 }
 
@@ -198,6 +198,18 @@ local generic_bom = {
 	["}"] = { name = "air" },
 	["<"] = { name = "air" },
 	[">"] = { name = "air" },
+}
+
+local mini_bp = {
+	[[
+W W s s s s s s W
+s s s s s s s s W
+s s s s s s s s W
+s s s s s s s s s
+s s s s s s s s s
+s s s s s s s s s
+W s s s s W W W W
+]],
 }
 
 local simple_bp = {
@@ -687,10 +699,10 @@ s . . . . . . . s
 . . . . . . . . . 
 s . . . . . . . s 
 ]]
-minetest.register_chatcommand("construct_test", {
+core.register_chatcommand("construct_test", {
 	description = "...",
 	func = function(name, param)
-		local pos = minetest.get_player_by_name(name):get_pos()
+		local pos = core.get_player_by_name(name):get_pos()
 		-- pos.y = pos.y - 2 - 6
 		pos.y = pos.y - 2
 
@@ -704,7 +716,7 @@ minetest.register_chatcommand("construct_test", {
 				return false
 			end
 			for _, cpos in ipairs(chests) do
-				local meta = minetest.get_meta(cpos)
+				local meta = core.get_meta(cpos)
 				local inv = meta:get_inventory()
 				inv:set_list("main", { "default:diamond", "default:wood 64", "default:glass" })
 			end
@@ -713,10 +725,10 @@ minetest.register_chatcommand("construct_test", {
 	end,
 })
 
-minetest.register_chatcommand("construct_test2", {
+core.register_chatcommand("construct_test2", {
 	description = "...",
 	func = function(name, param)
-		local pos = minetest.get_player_by_name(name):get_pos()
+		local pos = core.get_player_by_name(name):get_pos()
 		-- pos.y = pos.y - 2 - 6
 		pos.y = pos.y - 2
 
@@ -743,5 +755,34 @@ minetest.register_chatcommand("construct_test2", {
 			pos.z = pos.z + 9
 			pos.x = pos.x - 9 * 10
 		end
+	end,
+})
+
+core.register_chatcommand("ct2", {
+	description = "...",
+	func = function(name, param)
+		local player = core.get_player_by_name(name)
+		local origin = Rkit:get_look_target(player, 10)
+		if origin == nil then
+			return
+		end
+		local dim = Rkit_structures.get_dimensions(simple_bp)
+		local pos = player:get_pos()
+		core.log("origin" .. origin.x .. "," .. origin.y .. "," .. origin.z)
+		core.log("pos" .. pos.x .. "," .. pos.y .. "," .. pos.z)
+		local highZ = origin.z > pos.z
+		local highX = origin.x > pos.x
+		core.log("highZ: " .. tostring(highZ) .. ", highX: " .. tostring(highX))
+		local opt = { rotate = 0, speed = 1 }
+		-- if not highZ then
+		-- 	origin.z = origin.z - dim.z
+		-- 	opt.rotate = 2
+		-- end
+		if not highX then
+			-- origin.x = origin.x + dim.x
+		end
+		core.log("Constructing at " .. core.pos_to_string(origin))
+		Rkit_structures.contruction(origin, simple_bom, simple_bp, nil, opt)
+		-- Rkit_structures.contruction(origin, simple_bom, mini_bp, nil, opt)
 	end,
 })

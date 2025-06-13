@@ -161,3 +161,29 @@ function Rkit:spawn_particles_rainbow(pos, image_path, max_vel)
 		})
 	end
 end
+
+-- Returns the player look target or nil if no target is found
+function Rkit:get_look_target(player, dist)
+	dist = dist or 10
+	local pos = player:get_pos()
+	local dir = player:get_look_dir()
+	local ray = core.raycast(pos, vector.add(pos, vector.multiply(dir, dist)), true, true)
+	local found = false
+	-- Iterate through the raycast results
+	for pointed in ray do
+		if pointed.type == "node" then
+			local pointed_pos = pointed.under
+			local node = core.get_node(pointed_pos)
+			local def = core.registered_nodes[node.name]
+			if def and def.diggable ~= false then
+				pos = pointed_pos
+				found = true
+				break
+			end
+		end
+	end
+	if not found then
+		return nil
+	end
+	return pos
+end
